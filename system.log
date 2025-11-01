@@ -1,0 +1,333 @@
+2025-10-31 16:46:28,664 [INFO] (MainThread) [CONFIG] Loaded 4 lanes config.
+2025-10-31 16:46:28,665 [INFO] (MainThread) [CONFIG] Loaded timing config: {'cycle_delay': 0.3, 'settle_delay': 0.2, 'sensor_debounce': 0.1, 'push_delay': 0, 'gpio_mode': 'BCM', 'id': 1}
+2025-10-31 16:46:28,665 [INFO] (MainThread) [GPIO] Đã đặt chế độ chân cắm là: BCM
+2025-10-31 16:46:28,666 [INFO] (MainThread) [GPIO] Setup SENSOR pins: [3, 23, 24, 25]
+2025-10-31 16:46:28,666 [INFO] (MainThread) [GPIO] Setup RELAY pins: [17, 18, 27, 14, 22, 4]
+2025-10-31 16:46:28,666 [INFO] (MainThread) [GPIO] Reset tất cả relay về trạng thái mặc định (THU BẬT).
+2025-10-31 16:46:28,766 [INFO] (MainThread) [GPIO] Reset hoàn tất.
+2025-10-31 16:46:28,768 [INFO] (QRThread) [QR] Thread QR Detection started (dynamic lane map enabled).
+2025-10-31 16:46:28,769 [INFO] (MainThread) =========================================
+2025-10-31 16:46:28,770 [INFO] (MainThread)   HỆ THỐNG PHÂN LOẠI SẴN SÀNG (V2.0 - Sensor-First)
+2025-10-31 16:46:28,771 [INFO] (MainThread)   GPIO Mode: REAL (Config: BCM)
+2025-10-31 16:46:28,771 [INFO] (MainThread)   Log file: system.log
+2025-10-31 16:46:28,771 [INFO] (MainThread)   Sort log file: sort_log.json
+2025-10-31 16:46:28,771 [INFO] (MainThread)   API State: http://<IP_CUA_PI>:3000 (Đã đổi port 3000)
+2025-10-31 16:46:28,772 [INFO] (MainThread)   Truy cập: http://<IP_CUA_PI>:3000 (không yêu cầu đăng nhập)
+2025-10-31 16:46:28,772 [INFO] (MainThread) =========================================
+2025-10-31 16:46:28,782 [INFO] (MainThread) [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:3000
+ * Running on http://192.168.0.102:3000
+2025-10-31 16:46:28,782 [INFO] (MainThread) [33mPress CTRL+C to quit[0m
+2025-10-31 16:46:31,763 [INFO] (Thread-1 (process_request_thread)) [WS] Client guest-7fa8f617f0 connected. Total: 1
+2025-10-31 16:46:32,242 [INFO] (Thread-3 (process_request_thread)) 192.168.0.104 - - [31/Oct/2025 16:46:32] "GET / HTTP/1.1" 200 -
+2025-10-31 16:46:32,256 [WARNING] (Thread-1 (process_request_thread)) [WS] Kết nối WebSocket bị đóng hoặc lỗi: Connection closed: 1001 
+2025-10-31 16:46:32,258 [INFO] (Thread-1 (process_request_thread)) [WS] Client guest-7fa8f617f0 disconnected. Total: 0
+2025-10-31 16:46:32,260 [INFO] (Thread-1 (process_request_thread)) 192.168.0.104 - - [31/Oct/2025 16:46:32] "GET /ws HTTP/1.1" 200 -
+2025-10-31 16:46:32,632 [INFO] (Thread-4 (process_request_thread)) 192.168.0.104 - - [31/Oct/2025 16:46:32] "GET /config HTTP/1.1" 200 -
+2025-10-31 16:46:32,639 [INFO] (Thread-5 (process_request_thread)) [WS] Client guest-7fa8f71450 connected. Total: 1
+2025-10-31 16:46:32,644 [INFO] (Thread-6 (process_request_thread)) 192.168.0.104 - - [31/Oct/2025 16:46:32] "GET /video_feed HTTP/1.1" 200 -
+2025-10-31 16:46:44,173 [WARNING] (QRThread) [QR] Không rõ mã QR: raw='1', canon='1', keys=['A', 'B', 'C', 'D']
+2025-10-31 16:47:28,770 [INFO] (ConfigSaveThread) [CONFIG] Đã tự động lưu config (timing + lanes).
+2025-10-31 16:47:41,272 [WARNING] (QRThread) [QR] Không rõ mã QR: raw='3', canon='3', keys=['A', 'B', 'C', 'D']
+2025-10-31 16:48:02,197 [INFO] (Thread-8 (process_request_thread)) [CONFIG] Nhận config mới từ API (POST): {'timing_config': {'cycle_delay': 0.3, 'settle_delay': 0.2, 'sensor_debounce': 0.1, 'push_delay': 0, 'gpio_mode': 'BCM'}, 'lanes_config': [{'id': '1', 'name': 'Phân loại A (Đẩy)', 'pull_pin': 18, 'push_pin': 17, 'sensor_pin': 3}, {'id': '2', 'name': 'Phân loại B (Đẩy)', 'pull_pin': 14, 'push_pin': 27, 'sensor_pin': 23}, {'id': '3', 'name': 'Phân loại C (Đẩy)', 'pull_pin': 4, 'push_pin': 22, 'sensor_pin': 24}, {'id': 'D', 'name': 'Lane D (Đi thẳng/Thoát)', 'pull_pin': None, 'push_pin': None, 'sensor_pin': 25}]}
+2025-10-31 16:48:02,197 [INFO] (Thread-8 (process_request_thread)) [CONFIG] Cập nhật cấu hình lanes...
+2025-10-31 16:48:02,197 [WARNING] (Thread-8 (process_request_thread)) [CONFIG] Cấu hình lanes đã thay đổi. Cần khởi động lại ứng dụng.
+2025-10-31 16:48:02,199 [INFO] (Thread-8 (process_request_thread)) [CONFIG] Cấu hình mới đã được lưu (Hot Reload bị tắt).
+2025-10-31 16:48:02,200 [INFO] (Thread-8 (process_request_thread)) 192.168.0.104 - - [31/Oct/2025 16:48:02] "POST /update_config HTTP/1.1" 200 -
+2025-10-31 16:48:02,256 [INFO] (Thread-9 (process_request_thread)) 192.168.0.104 - - [31/Oct/2025 16:48:02] "GET /config HTTP/1.1" 200 -
+2025-10-31 16:48:12,661 [INFO] (Thread-10 (process_request_thread)) 192.168.0.104 - - [31/Oct/2025 16:48:12] "GET / HTTP/1.1" 200 -
+2025-10-31 16:48:12,676 [WARNING] (Thread-5 (process_request_thread)) [WS] Kết nối WebSocket bị đóng hoặc lỗi: Connection closed: 1001 
+2025-10-31 16:48:12,677 [INFO] (Thread-5 (process_request_thread)) [WS] Client guest-7fa8f71450 disconnected. Total: 0
+2025-10-31 16:48:12,678 [INFO] (Thread-5 (process_request_thread)) 192.168.0.104 - - [31/Oct/2025 16:48:12] "GET /ws HTTP/1.1" 200 -
+2025-10-31 16:48:12,949 [INFO] (Thread-12 (process_request_thread)) 192.168.0.104 - - [31/Oct/2025 16:48:12] "GET /config HTTP/1.1" 200 -
+2025-10-31 16:48:12,955 [INFO] (Thread-11 (process_request_thread)) [WS] Client guest-7fa8f71bd0 connected. Total: 1
+2025-10-31 16:48:12,959 [INFO] (Thread-13 (process_request_thread)) 192.168.0.104 - - [31/Oct/2025 16:48:12] "GET /video_feed HTTP/1.1" 200 -
+2025-10-31 16:48:28,771 [INFO] (ConfigSaveThread) [CONFIG] Đã tự động lưu config (timing + lanes).
+2025-10-31 16:48:57,871 [INFO] (Thread-15 (process_request_thread)) [CONFIG] Nhận config mới từ API (POST): {'timing_config': {'cycle_delay': 0.3, 'settle_delay': 0.2, 'sensor_debounce': 0.1, 'push_delay': 0, 'gpio_mode': 'BCM'}, 'lanes_config': [{'id': '1', 'name': 'Phân loại A (Đẩy)', 'pull_pin': 18, 'push_pin': 17, 'sensor_pin': 3}, {'id': '2', 'name': 'Phân loại B (Đẩy)', 'pull_pin': 14, 'push_pin': 27, 'sensor_pin': 23}, {'id': '3', 'name': 'Phân loại C (Đẩy)', 'pull_pin': 4, 'push_pin': 22, 'sensor_pin': 24}, {'id': 'D', 'name': 'Lane D (Đi thẳng/Thoát)', 'pull_pin': None, 'push_pin': None, 'sensor_pin': 25}]}
+2025-10-31 16:48:57,872 [INFO] (Thread-15 (process_request_thread)) [CONFIG] Cập nhật cấu hình lanes...
+2025-10-31 16:48:57,872 [WARNING] (Thread-15 (process_request_thread)) [CONFIG] Cấu hình lanes đã thay đổi. Cần khởi động lại ứng dụng.
+2025-10-31 16:48:57,874 [INFO] (Thread-15 (process_request_thread)) [CONFIG] Cấu hình mới đã được lưu (Hot Reload bị tắt).
+2025-10-31 16:48:57,875 [INFO] (Thread-15 (process_request_thread)) 192.168.0.104 - - [31/Oct/2025 16:48:57] "POST /update_config HTTP/1.1" 200 -
+2025-10-31 16:48:57,905 [INFO] (Thread-16 (process_request_thread)) 192.168.0.104 - - [31/Oct/2025 16:48:57] "GET /config HTTP/1.1" 200 -
+2025-10-31 16:49:01,547 [INFO] (Thread-17 (process_request_thread)) 192.168.0.104 - - [31/Oct/2025 16:49:01] "GET /config HTTP/1.1" 200 -
+2025-10-31 16:49:02,153 [INFO] (Thread-18 (process_request_thread)) 192.168.0.104 - - [31/Oct/2025 16:49:02] "GET /config HTTP/1.1" 200 -
+2025-10-31 16:49:02,282 [INFO] (Thread-19 (process_request_thread)) 192.168.0.104 - - [31/Oct/2025 16:49:02] "GET /config HTTP/1.1" 200 -
+2025-10-31 16:49:02,517 [INFO] (Thread-20 (process_request_thread)) 192.168.0.104 - - [31/Oct/2025 16:49:02] "GET /config HTTP/1.1" 200 -
+2025-10-31 16:49:02,882 [INFO] (Thread-21 (process_request_thread)) 192.168.0.104 - - [31/Oct/2025 16:49:02] "GET / HTTP/1.1" 200 -
+2025-10-31 16:49:02,904 [WARNING] (Thread-11 (process_request_thread)) [WS] Kết nối WebSocket bị đóng hoặc lỗi: Connection closed: 1001 
+2025-10-31 16:49:02,905 [INFO] (Thread-11 (process_request_thread)) [WS] Client guest-7fa8f71bd0 disconnected. Total: 0
+2025-10-31 16:49:02,905 [INFO] (Thread-11 (process_request_thread)) 192.168.0.104 - - [31/Oct/2025 16:49:02] "GET /ws HTTP/1.1" 200 -
+2025-10-31 16:49:03,071 [INFO] (Thread-22 (process_request_thread)) [WS] Client guest-7fa915efd0 connected. Total: 1
+2025-10-31 16:49:03,073 [INFO] (Thread-25 (process_request_thread)) 192.168.0.104 - - [31/Oct/2025 16:49:03] "GET /config HTTP/1.1" 200 -
+2025-10-31 16:49:03,078 [INFO] (Thread-23 (process_request_thread)) 192.168.0.104 - - [31/Oct/2025 16:49:03] "GET /video_feed HTTP/1.1" 200 -
+2025-10-31 16:49:06,889 [INFO] (MainThread) Đang tắt ThreadPoolExecutor...
+2025-10-31 16:49:06,889 [INFO] (MainThread) Đang cleanup GPIO...
+2025-10-31 16:49:06,890 [INFO] (MainThread) ✅ GPIO cleaned up.
+2025-10-31 16:49:06,890 [INFO] (MainThread) 👋 Tạm biệt!
+2025-10-31 16:49:12,305 [INFO] (MainThread) [CONFIG] Loaded 4 lanes config.
+2025-10-31 16:49:12,305 [INFO] (MainThread) [CONFIG] Loaded timing config: {'cycle_delay': 0.3, 'settle_delay': 0.2, 'sensor_debounce': 0.1, 'push_delay': 0, 'gpio_mode': 'BCM', 'id': 1}
+2025-10-31 16:49:12,306 [INFO] (MainThread) [GPIO] Đã đặt chế độ chân cắm là: BCM
+2025-10-31 16:49:12,306 [INFO] (MainThread) [GPIO] Setup SENSOR pins: [3, 23, 24, 25]
+2025-10-31 16:49:12,306 [INFO] (MainThread) [GPIO] Setup RELAY pins: [17, 18, 27, 14, 22, 4]
+2025-10-31 16:49:12,306 [INFO] (MainThread) [GPIO] Reset tất cả relay về trạng thái mặc định (THU BẬT).
+2025-10-31 16:49:12,407 [INFO] (MainThread) [GPIO] Reset hoàn tất.
+2025-10-31 16:49:12,408 [INFO] (QRThread) [QR] Thread QR Detection started (dynamic lane map enabled).
+2025-10-31 16:49:12,409 [INFO] (MainThread) =========================================
+2025-10-31 16:49:12,411 [INFO] (MainThread)   HỆ THỐNG PHÂN LOẠI SẴN SÀNG (V1.7 - QR Standardized)
+2025-10-31 16:49:12,411 [INFO] (MainThread)   GPIO Mode: REAL (Config: BCM)
+2025-10-31 16:49:12,411 [INFO] (MainThread)   Log file: system.log
+2025-10-31 16:49:12,412 [INFO] (MainThread)   Sort log file: sort_log.json
+2025-10-31 16:49:12,412 [INFO] (MainThread)   API State: http://<IP_CUA_PI>:5000/api/state
+2025-10-31 16:49:12,412 [INFO] (MainThread)   Truy cập: http://<IP_CUA_PI>:5000 (không yêu cầu đăng nhập)
+2025-10-31 16:49:12,412 [INFO] (MainThread) =========================================
+2025-10-31 16:49:12,423 [INFO] (MainThread) [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:3000
+ * Running on http://192.168.0.102:3000
+2025-10-31 16:49:12,424 [INFO] (MainThread) [33mPress CTRL+C to quit[0m
+2025-10-31 16:49:14,688 [INFO] (Thread-1 (process_request_thread)) 192.168.0.104 - - [31/Oct/2025 16:49:14] "GET / HTTP/1.1" 200 -
+2025-10-31 16:49:14,966 [INFO] (Thread-3 (process_request_thread)) 192.168.0.104 - - [31/Oct/2025 16:49:14] "GET /config HTTP/1.1" 200 -
+2025-10-31 16:49:14,967 [INFO] (Thread-2 (process_request_thread)) [WS] Client guest-7f7e4d0980 connected. Total: 1
+2025-10-31 16:49:14,976 [INFO] (Thread-5 (process_request_thread)) 192.168.0.104 - - [31/Oct/2025 16:49:14] "GET /video_feed HTTP/1.1" 200 -
+2025-10-31 16:49:36,410 [INFO] (QRThread) [QR] '1' -> canon='1' -> lane index 0
+2025-10-31 16:49:51,764 [INFO] (QRThread) [QR] '2' -> canon='2' -> lane index 1
+2025-10-31 16:49:54,784 [INFO] (QRThread) [QR] '1' -> canon='1' -> lane index 0
+2025-10-31 16:50:00,637 [INFO] (QRThread) [QR] '3' -> canon='3' -> lane index 2
+2025-10-31 16:50:01,988 [INFO] (QRThread) [QR] '2' -> canon='2' -> lane index 1
+2025-10-31 16:50:03,425 [INFO] (QRThread) [QR] '1' -> canon='1' -> lane index 0
+2025-10-31 16:50:11,840 [CRITICAL] (SensorThread) ==================================================
+2025-10-31 16:50:11,840 [CRITICAL] (SensorThread) [MAINTENANCE MODE] Lỗi nghiêm trọng: Sensor Phân loại C (Đẩy) kích hoạt ngoài danh sách hàng chờ.
+2025-10-31 16:50:11,840 [CRITICAL] (SensorThread) Hệ thống đã dừng hoạt động. Yêu cầu kiểm tra.
+2025-10-31 16:50:11,840 [CRITICAL] (SensorThread) ==================================================
+2025-10-31 16:50:24,243 [INFO] (Thread-6 (process_request_thread)) 192.168.0.104 - - [31/Oct/2025 16:50:24] "GET / HTTP/1.1" 200 -
+2025-10-31 16:50:24,255 [WARNING] (Thread-2 (process_request_thread)) [WS] Kết nối WebSocket bị đóng hoặc lỗi: Connection closed: 1001 
+2025-10-31 16:50:24,256 [INFO] (Thread-2 (process_request_thread)) [WS] Client guest-7f7e4d0980 disconnected. Total: 0
+2025-10-31 16:50:24,256 [INFO] (Thread-2 (process_request_thread)) 192.168.0.104 - - [31/Oct/2025 16:50:24] "GET /ws HTTP/1.1" 200 -
+2025-10-31 16:50:24,463 [INFO] (Thread-7 (process_request_thread)) [WS] Client guest-7f7e4e51d0 connected. Total: 1
+2025-10-31 16:50:24,468 [INFO] (Thread-10 (process_request_thread)) 192.168.0.104 - - [31/Oct/2025 16:50:24] "GET /config HTTP/1.1" 200 -
+2025-10-31 16:50:24,578 [INFO] (Thread-9 (process_request_thread)) 192.168.0.104 - - [31/Oct/2025 16:50:24] "GET /video_feed HTTP/1.1" 200 -
+2025-10-31 16:50:25,950 [INFO] (Thread-11 (process_request_thread)) 192.168.0.104 - - [31/Oct/2025 16:50:25] "GET / HTTP/1.1" 200 -
+2025-10-31 16:50:25,964 [WARNING] (Thread-7 (process_request_thread)) [WS] Kết nối WebSocket bị đóng hoặc lỗi: Connection closed: 1001 
+2025-10-31 16:50:25,965 [INFO] (Thread-7 (process_request_thread)) [WS] Client guest-7f7e4e51d0 disconnected. Total: 0
+2025-10-31 16:50:25,965 [INFO] (Thread-7 (process_request_thread)) 192.168.0.104 - - [31/Oct/2025 16:50:25] "GET /ws HTTP/1.1" 200 -
+2025-10-31 16:50:26,108 [INFO] (Thread-14 (process_request_thread)) 192.168.0.104 - - [31/Oct/2025 16:50:26] "GET /config HTTP/1.1" 200 -
+2025-10-31 16:50:26,109 [INFO] (Thread-12 (process_request_thread)) [WS] Client guest-7f7e4e5810 connected. Total: 1
+2025-10-31 16:50:26,215 [INFO] (Thread-13 (process_request_thread)) 192.168.0.104 - - [31/Oct/2025 16:50:26] "GET /video_feed HTTP/1.1" 200 -
+2025-10-31 16:50:27,419 [INFO] (Thread-16 (process_request_thread)) [MAINTENANCE MODE] Đã reset chế độ bảo trì.
+2025-10-31 16:50:27,421 [INFO] (Thread-16 (process_request_thread)) 192.168.0.104 - - [31/Oct/2025 16:50:27] "POST /api/reset_maintenance HTTP/1.1" 200 -
+2025-10-31 16:51:12,410 [INFO] (ConfigSaveThread) [CONFIG] Đã tự động lưu config (timing + lanes).
+2025-10-31 16:52:12,414 [INFO] (ConfigSaveThread) [CONFIG] Đã tự động lưu config (timing + lanes).
+2025-10-31 16:53:12,415 [INFO] (ConfigSaveThread) [CONFIG] Đã tự động lưu config (timing + lanes).
+2025-10-31 16:53:20,450 [INFO] (Thread-18 (process_request_thread)) 192.168.0.104 - - [31/Oct/2025 16:53:20] "[33mGET /api/sort_log HTTP/1.1[0m" 404 -
+2025-10-31 16:53:23,571 [ERROR] (Thread-12 (process_request_thread)) [WS] Lỗi xử lý message: name '_run_test_relay' is not defined
+2025-10-31 16:53:24,810 [ERROR] (Thread-12 (process_request_thread)) [WS] Lỗi xử lý message: name '_run_test_relay' is not defined
+2025-10-31 16:53:24,975 [ERROR] (Thread-12 (process_request_thread)) [WS] Lỗi xử lý message: name '_run_test_relay' is not defined
+2025-10-31 16:53:26,420 [ERROR] (Thread-12 (process_request_thread)) [WS] Lỗi xử lý message: name '_run_test_relay' is not defined
+2025-10-31 16:53:28,415 [INFO] (Thread-12 (process_request_thread)) [TEST] Auto-Test (Sensor->Relay) set by guest-7f7e4e5810 to: True
+2025-10-31 16:53:35,038 [INFO] (Thread-12 (process_request_thread)) [TEST] Auto-Test (Sensor->Relay) set by guest-7f7e4e5810 to: False
+2025-10-31 16:53:35,039 [INFO] (Thread-12 (process_request_thread)) [GPIO] Reset tất cả relay về trạng thái mặc định (THU BẬT).
+2025-10-31 16:53:35,140 [INFO] (Thread-12 (process_request_thread)) [GPIO] Reset hoàn tất.
+2025-10-31 16:53:39,065 [INFO] (Thread-19 (process_request_thread)) 192.168.0.104 - - [31/Oct/2025 16:53:39] "GET / HTTP/1.1" 200 -
+2025-10-31 16:53:39,082 [WARNING] (Thread-12 (process_request_thread)) [WS] Kết nối WebSocket bị đóng hoặc lỗi: Connection closed: 1001 
+2025-10-31 16:53:39,083 [INFO] (Thread-12 (process_request_thread)) [WS] Client guest-7f7e4e5810 disconnected. Total: 0
+2025-10-31 16:53:39,084 [INFO] (Thread-12 (process_request_thread)) 192.168.0.104 - - [31/Oct/2025 16:53:39] "GET /ws HTTP/1.1" 200 -
+2025-10-31 16:53:39,291 [INFO] (Thread-20 (process_request_thread)) [WS] Client guest-7f7e6c69e0 connected. Total: 1
+2025-10-31 16:53:39,334 [INFO] (Thread-22 (process_request_thread)) 192.168.0.104 - - [31/Oct/2025 16:53:39] "GET /config HTTP/1.1" 200 -
+2025-10-31 16:53:39,340 [INFO] (Thread-23 (process_request_thread)) 192.168.0.104 - - [31/Oct/2025 16:53:39] "GET /video_feed HTTP/1.1" 200 -
+2025-10-31 16:53:41,948 [WARNING] (Thread-20 (process_request_thread)) [WS] Kết nối WebSocket bị đóng hoặc lỗi: Connection closed: 1001 
+2025-10-31 16:53:41,949 [INFO] (Thread-20 (process_request_thread)) [WS] Client guest-7f7e6c69e0 disconnected. Total: 0
+2025-10-31 16:53:41,950 [INFO] (Thread-20 (process_request_thread)) 192.168.0.104 - - [31/Oct/2025 16:53:41] "GET /ws HTTP/1.1" 200 -
+2025-10-31 16:53:44,905 [INFO] (MainThread) Đang tắt ThreadPoolExecutor...
+2025-10-31 16:53:44,905 [INFO] (MainThread) Đang cleanup GPIO...
+2025-10-31 16:53:44,906 [INFO] (MainThread) ✅ GPIO cleaned up.
+2025-10-31 16:53:44,906 [INFO] (MainThread) 👋 Tạm biệt!
+2025-10-31 17:05:05,968 [INFO] (MainThread) [CONFIG] Loaded 4 lanes config.
+2025-10-31 17:05:05,969 [INFO] (MainThread) [CONFIG] Loaded timing config: {'cycle_delay': 0.3, 'settle_delay': 0.2, 'sensor_debounce': 0.1, 'push_delay': 0, 'gpio_mode': 'BCM', 'id': 1}
+2025-10-31 17:05:05,969 [INFO] (MainThread) [GPIO] Đã đặt chế độ chân cắm là: BCM
+2025-10-31 17:05:05,969 [INFO] (MainThread) [GPIO] Setup SENSOR pins: [3, 23, 24, 25]
+2025-10-31 17:05:05,969 [INFO] (MainThread) [GPIO] Setup RELAY pins: [17, 18, 27, 14, 22, 4]
+2025-10-31 17:05:05,969 [INFO] (MainThread) [GPIO] Reset tất cả relay về trạng thái mặc định (THU BẬT).
+2025-10-31 17:05:06,069 [INFO] (MainThread) [GPIO] Reset hoàn tất.
+2025-10-31 17:05:06,071 [INFO] (QRThread) [QR] Thread QR Detection started (dynamic lane map enabled).
+2025-10-31 17:05:06,072 [INFO] (MainThread) =========================================
+2025-10-31 17:05:06,073 [INFO] (MainThread)   HỆ THỐNG PHÂN LOẠI SẴN SÀNG (V2.0 - Sensor-First)
+2025-10-31 17:05:06,074 [INFO] (MainThread)   GPIO Mode: REAL (Config: BCM)
+2025-10-31 17:05:06,074 [INFO] (MainThread)   Log file: system.log
+2025-10-31 17:05:06,075 [INFO] (MainThread)   Sort log file: sort_log.json
+2025-10-31 17:05:06,075 [INFO] (MainThread)   API State: http://<IP_CUA_PI>:3000 (Đã đổi port 3000)
+2025-10-31 17:05:06,075 [INFO] (MainThread)   Truy cập: http://<IP_CUA_PI>:3000 (không yêu cầu đăng nhập)
+2025-10-31 17:05:06,075 [INFO] (MainThread) =========================================
+2025-10-31 17:05:06,085 [INFO] (MainThread) [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:3000
+ * Running on http://192.168.0.102:3000
+2025-10-31 17:05:06,086 [INFO] (MainThread) [33mPress CTRL+C to quit[0m
+2025-10-31 17:05:16,487 [INFO] (Thread-1 (process_request_thread)) 192.168.0.104 - - [31/Oct/2025 17:05:16] "GET / HTTP/1.1" 200 -
+2025-10-31 17:05:17,091 [INFO] (Thread-3 (process_request_thread)) 192.168.0.104 - - [31/Oct/2025 17:05:17] "GET /config HTTP/1.1" 200 -
+2025-10-31 17:05:17,093 [INFO] (Thread-2 (process_request_thread)) [WS] Client guest-7f9649c980 connected. Total: 1
+2025-10-31 17:05:17,100 [INFO] (Thread-5 (process_request_thread)) 192.168.0.104 - - [31/Oct/2025 17:05:17] "GET /video_feed HTTP/1.1" 200 -
+2025-10-31 17:05:37,324 [INFO] (TestWorker_0) [GPIO] Reset tất cả relay về trạng thái mặc định (THU BẬT).
+2025-10-31 17:05:37,424 [INFO] (TestWorker_0) [GPIO] Reset hoàn tất.
+2025-10-31 17:05:40,491 [INFO] (Thread-2 (process_request_thread)) [TEST] Auto-Test (Sensor->Relay) set by guest-7f9649c980 to: True
+2025-10-31 17:05:47,361 [INFO] (Thread-2 (process_request_thread)) [TEST] Auto-Test (Sensor->Relay) set by guest-7f9649c980 to: False
+2025-10-31 17:05:47,362 [INFO] (Thread-2 (process_request_thread)) [GPIO] Reset tất cả relay về trạng thái mặc định (THU BẬT).
+2025-10-31 17:05:47,462 [INFO] (Thread-2 (process_request_thread)) [GPIO] Reset hoàn tất.
+2025-10-31 17:05:54,667 [INFO] (QRThread) [QR] '2' -> canon='2' -> lane index 1 (Thêm vào hàng chờ)
+2025-10-31 17:05:56,300 [INFO] (QRThread) [QR] '1' -> canon='1' -> lane index 0 (Thêm vào hàng chờ)
+2025-10-31 17:05:58,289 [INFO] (QRThread) [QR] '3' -> canon='3' -> lane index 2 (Thêm vào hàng chờ)
+2025-10-31 17:06:00,231 [INFO] (QRThread) [QR] '2' -> canon='2' -> lane index 1 (Thêm vào hàng chờ)
+2025-10-31 17:06:06,075 [INFO] (ConfigSaveThread) [CONFIG] Đã tự động lưu config (timing + lanes).
+2025-10-31 17:06:28,065 [INFO] (QRThread) [QR] '1' -> canon='1' -> lane index 0 (Thêm vào hàng chờ)
+2025-10-31 17:06:30,298 [INFO] (QRThread) [QR] '3' -> canon='3' -> lane index 2 (Thêm vào hàng chờ)
+2025-10-31 17:06:31,579 [INFO] (QRThread) [QR] '2' -> canon='2' -> lane index 1 (Thêm vào hàng chờ)
+2025-10-31 17:06:35,093 [INFO] (QRThread) [QR] '1' -> canon='1' -> lane index 0 (Thêm vào hàng chờ)
+2025-10-31 17:06:40,181 [INFO] (QRThread) [QR] '2' -> canon='2' -> lane index 1 (Thêm vào hàng chờ)
+2025-10-31 17:06:41,810 [INFO] (QRThread) [QR] '1' -> canon='1' -> lane index 0 (Thêm vào hàng chờ)
+2025-10-31 17:07:06,077 [INFO] (ConfigSaveThread) [CONFIG] Đã tự động lưu config (timing + lanes).
+2025-10-31 17:07:25,183 [INFO] (QRThread) [QR] '1' -> canon='1' -> lane index 0 (Thêm vào hàng chờ)
+2025-10-31 17:07:26,802 [WARNING] (QRThread) [QR] Không rõ mã QR: raw='https://get-qr.com/Bi3ClN', canon='HTTPSGETCOMBI3CLN', keys=['1', '2', '3', 'D']
+2025-10-31 17:07:29,260 [INFO] (QRThread) [QR] '2' -> canon='2' -> lane index 1 (Thêm vào hàng chờ)
+2025-10-31 17:07:30,513 [INFO] (QRThread) [QR] '1' -> canon='1' -> lane index 0 (Thêm vào hàng chờ)
+2025-10-31 17:08:06,083 [INFO] (ConfigSaveThread) [CONFIG] Đã tự động lưu config (timing + lanes).
+2025-10-31 17:09:06,085 [INFO] (ConfigSaveThread) [CONFIG] Đã tự động lưu config (timing + lanes).
+2025-10-31 17:10:06,086 [INFO] (ConfigSaveThread) [CONFIG] Đã tự động lưu config (timing + lanes).
+2025-10-31 17:11:06,087 [INFO] (ConfigSaveThread) [CONFIG] Đã tự động lưu config (timing + lanes).
+2025-10-31 17:12:06,088 [INFO] (ConfigSaveThread) [CONFIG] Đã tự động lưu config (timing + lanes).
+2025-10-31 17:13:06,089 [INFO] (ConfigSaveThread) [CONFIG] Đã tự động lưu config (timing + lanes).
+2025-10-31 17:14:06,090 [INFO] (ConfigSaveThread) [CONFIG] Đã tự động lưu config (timing + lanes).
+2025-10-31 17:15:06,091 [INFO] (ConfigSaveThread) [CONFIG] Đã tự động lưu config (timing + lanes).
+2025-10-31 17:16:06,093 [INFO] (ConfigSaveThread) [CONFIG] Đã tự động lưu config (timing + lanes).
+2025-10-31 17:16:50,591 [INFO] (MainThread) Đang tắt ThreadPoolExecutor...
+2025-10-31 17:16:50,592 [INFO] (MainThread) Đang cleanup GPIO...
+2025-10-31 17:16:50,593 [INFO] (MainThread) ✅ GPIO cleaned up.
+2025-10-31 17:16:50,593 [INFO] (MainThread) 👋 Tạm biệt!
+2025-10-31 17:21:47,810 [INFO] (MainThread) [CONFIG] Loaded 4 lanes config.
+2025-10-31 17:21:47,811 [INFO] (MainThread) [CONFIG] Loaded timing config: {'cycle_delay': 0.3, 'settle_delay': 0.2, 'sensor_debounce': 0.1, 'push_delay': 0, 'gpio_mode': 'BCM', 'id': 1}
+2025-10-31 17:21:47,811 [INFO] (MainThread) [GPIO] Đã đặt chế độ chân cắm là: BCM
+2025-10-31 17:21:47,811 [INFO] (MainThread) [GPIO] Setup SENSOR pins: [3, 23, 24, 25]
+2025-10-31 17:21:47,811 [INFO] (MainThread) [GPIO] Setup RELAY pins: [17, 18, 27, 14, 22, 4]
+2025-10-31 17:21:47,812 [INFO] (MainThread) [GPIO] Reset tất cả relay về trạng thái mặc định (THU BẬT).
+2025-10-31 17:21:47,912 [INFO] (MainThread) [GPIO] Reset hoàn tất.
+2025-10-31 17:21:47,913 [INFO] (QRThread) [QR] Thread QR Detection started (dynamic lane map enabled).
+2025-10-31 17:21:47,914 [INFO] (MainThread) =========================================
+2025-10-31 17:21:47,915 [INFO] (MainThread)   HỆ THỐNG PHÂN LOẠI SẴN SÀNG (V2.0 - Sensor-First)
+2025-10-31 17:21:47,916 [INFO] (MainThread)   GPIO Mode: REAL (Config: BCM)
+2025-10-31 17:21:47,917 [INFO] (MainThread)   Log file: system.log
+2025-10-31 17:21:47,917 [INFO] (MainThread)   Sort log file: sort_log.json
+2025-10-31 17:21:47,917 [INFO] (MainThread)   API State: http://<IP_CUA_PI>:3000 (Đã đổi port 3000)
+2025-10-31 17:21:47,917 [INFO] (MainThread)   Truy cập: http://<IP_CUA_PI>:3000 (không yêu cầu đăng nhập)
+2025-10-31 17:21:47,917 [INFO] (MainThread) =========================================
+2025-10-31 17:21:47,928 [INFO] (MainThread) [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:3000
+ * Running on http://192.168.0.102:3000
+2025-10-31 17:21:47,929 [INFO] (MainThread) [33mPress CTRL+C to quit[0m
+2025-10-31 17:21:50,323 [INFO] (Thread-1 (process_request_thread)) 192.168.0.104 - - [31/Oct/2025 17:21:50] "GET / HTTP/1.1" 200 -
+2025-10-31 17:21:51,013 [INFO] (Thread-2 (process_request_thread)) [WS] Client guest-7f7a0f8980 connected. Total: 1
+2025-10-31 17:21:51,018 [INFO] (Thread-5 (process_request_thread)) 192.168.0.104 - - [31/Oct/2025 17:21:51] "GET /config HTTP/1.1" 200 -
+2025-10-31 17:21:51,023 [INFO] (Thread-4 (process_request_thread)) 192.168.0.104 - - [31/Oct/2025 17:21:51] "GET /video_feed HTTP/1.1" 200 -
+2025-10-31 17:22:02,496 [INFO] (QRThread) [QR] 'https://get-qr.com/ehk9v6' -> canon='HTTPSGETCOMEHK9V6' -> lane index 0 (Thêm vào hàng chờ)
+2025-10-31 17:22:19,593 [INFO] (Thread-8 (process_request_thread)) [CONFIG] Nhận config mới từ API (POST): {'timing_config': {'cycle_delay': 0.3, 'settle_delay': 0.2, 'sensor_debounce': 0.1, 'push_delay': 0.5, 'gpio_mode': 'BCM'}, 'lanes_config': [{'id': 'https://get-qr.com/ehk9v6', 'name': 'Phân loại A (Đẩy)', 'pull_pin': 18, 'push_pin': 17, 'sensor_pin': 3}, {'id': 'https://get-qr.com/16owwU', 'name': 'Phân loại B (Đẩy)', 'pull_pin': 14, 'push_pin': 27, 'sensor_pin': 23}, {'id': 'https://get-qr.com/ZeDzW4', 'name': 'Phân loại C (Đẩy)', 'pull_pin': 4, 'push_pin': 22, 'sensor_pin': 24}, {'id': 'D', 'name': 'Lane D (Đi thẳng/Thoát)', 'pull_pin': None, 'push_pin': None, 'sensor_pin': 25}]}
+2025-10-31 17:22:19,593 [INFO] (Thread-8 (process_request_thread)) [CONFIG] Cập nhật cấu hình lanes...
+2025-10-31 17:22:19,593 [WARNING] (Thread-8 (process_request_thread)) [CONFIG] Cấu hình lanes đã thay đổi. Cần khởi động lại ứng dụng.
+2025-10-31 17:22:19,595 [INFO] (Thread-8 (process_request_thread)) [CONFIG] Cấu hình mới đã được lưu (Hot Reload bị tắt).
+2025-10-31 17:22:19,596 [INFO] (Thread-8 (process_request_thread)) 192.168.0.104 - - [31/Oct/2025 17:22:19] "POST /update_config HTTP/1.1" 200 -
+2025-10-31 17:22:19,631 [INFO] (Thread-9 (process_request_thread)) 192.168.0.104 - - [31/Oct/2025 17:22:19] "GET /config HTTP/1.1" 200 -
+2025-10-31 17:22:32,209 [INFO] (QRThread) [QR] 'https://get-qr.com/ehk9v6' -> canon='HTTPSGETCOMEHK9V6' -> lane index 0 (Thêm vào hàng chờ)
+2025-10-31 17:22:47,463 [INFO] (QRThread) [QR] 'https://get-qr.com/16owwU' -> canon='HTTPSGETCOM16OWWU' -> lane index 1 (Thêm vào hàng chờ)
+2025-10-31 17:22:47,915 [INFO] (ConfigSaveThread) [CONFIG] Đã tự động lưu config (timing + lanes).
+2025-10-31 17:22:52,172 [INFO] (QRThread) [QR] 'https://get-qr.com/ZeDzW4' -> canon='HTTPSGETCOMZEDZW4' -> lane index 2 (Thêm vào hàng chờ)
+2025-10-31 17:22:54,342 [INFO] (QRThread) [QR] 'https://get-qr.com/16owwU' -> canon='HTTPSGETCOM16OWWU' -> lane index 1 (Thêm vào hàng chờ)
+2025-10-31 17:23:18,546 [INFO] (QRThread) [QR] 'https://get-qr.com/ZeDzW4' -> canon='HTTPSGETCOMZEDZW4' -> lane index 2 (Thêm vào hàng chờ)
+2025-10-31 17:23:47,919 [INFO] (ConfigSaveThread) [CONFIG] Đã tự động lưu config (timing + lanes).
+2025-10-31 17:23:48,375 [INFO] (QRThread) [QR] 'https://get-qr.com/ZeDzW4' -> canon='HTTPSGETCOMZEDZW4' -> lane index 2 (Thêm vào hàng chờ)
+2025-10-31 17:23:54,406 [INFO] (QRThread) [QR] 'https://get-qr.com/ZeDzW4' -> canon='HTTPSGETCOMZEDZW4' -> lane index 2 (Thêm vào hàng chờ)
+2025-10-31 17:24:04,420 [INFO] (QRThread) [QR] 'https://get-qr.com/ZeDzW4' -> canon='HTTPSGETCOMZEDZW4' -> lane index 2 (Thêm vào hàng chờ)
+2025-10-31 17:24:27,465 [INFO] (Thread-17 (process_request_thread)) [CONFIG] Nhận config mới từ API (POST): {'timing_config': {'cycle_delay': 0.3, 'settle_delay': 0.2, 'sensor_debounce': 0.1, 'push_delay': 1, 'gpio_mode': 'BCM'}, 'lanes_config': [{'id': 'https://get-qr.com/ehk9v6', 'name': 'Phân loại A (Đẩy)', 'pull_pin': 18, 'push_pin': 17, 'sensor_pin': 3}, {'id': 'https://get-qr.com/16owwU', 'name': 'Phân loại B (Đẩy)', 'pull_pin': 14, 'push_pin': 27, 'sensor_pin': 23}, {'id': 'https://get-qr.com/ZeDzW4', 'name': 'Phân loại C (Đẩy)', 'pull_pin': 4, 'push_pin': 22, 'sensor_pin': 24}, {'id': 'D', 'name': 'Lane D (Đi thẳng/Thoát)', 'pull_pin': None, 'push_pin': None, 'sensor_pin': 25}]}
+2025-10-31 17:24:27,466 [INFO] (Thread-17 (process_request_thread)) [CONFIG] Cập nhật cấu hình lanes...
+2025-10-31 17:24:27,469 [WARNING] (Thread-17 (process_request_thread)) [CONFIG] Cấu hình lanes đã thay đổi. Cần khởi động lại ứng dụng.
+2025-10-31 17:24:27,470 [INFO] (Thread-17 (process_request_thread)) [CONFIG] Cấu hình mới đã được lưu (Hot Reload bị tắt).
+2025-10-31 17:24:27,471 [INFO] (Thread-17 (process_request_thread)) 192.168.0.104 - - [31/Oct/2025 17:24:27] "POST /update_config HTTP/1.1" 200 -
+2025-10-31 17:24:27,503 [INFO] (Thread-18 (process_request_thread)) 192.168.0.104 - - [31/Oct/2025 17:24:27] "GET /config HTTP/1.1" 200 -
+2025-10-31 17:24:38,294 [INFO] (QRThread) [QR] 'https://get-qr.com/16owwU' -> canon='HTTPSGETCOM16OWWU' -> lane index 1 (Thêm vào hàng chờ)
+2025-10-31 17:24:47,923 [INFO] (ConfigSaveThread) [CONFIG] Đã tự động lưu config (timing + lanes).
+2025-10-31 17:24:55,773 [INFO] (QRThread) [QR] 'https://get-qr.com/16owwU' -> canon='HTTPSGETCOM16OWWU' -> lane index 1 (Thêm vào hàng chờ)
+2025-10-31 17:25:13,444 [INFO] (MainThread) Đang tắt ThreadPoolExecutor...
+2025-10-31 17:25:13,446 [INFO] (MainThread) Đang cleanup GPIO...
+2025-10-31 17:25:13,447 [INFO] (MainThread) ✅ GPIO cleaned up.
+2025-10-31 17:25:13,447 [INFO] (MainThread) 👋 Tạm biệt!
+2025-10-31 17:37:21,890 [INFO] (MainThread) [CONFIG] Loaded 4 lanes config.
+2025-10-31 17:37:21,891 [INFO] (MainThread) [CONFIG] Loaded timing config: {'cycle_delay': 0.3, 'settle_delay': 0.2, 'sensor_debounce': 0.1, 'push_delay': 1, 'gpio_mode': 'BCM', 'id': 1}
+2025-10-31 17:37:21,891 [INFO] (MainThread) [GPIO] Đã đặt chế độ chân cắm là: BCM
+2025-10-31 17:37:21,892 [INFO] (MainThread) [GPIO] Setup SENSOR pins: [3, 23, 24, 25]
+2025-10-31 17:37:21,892 [INFO] (MainThread) [GPIO] Setup RELAY pins: [17, 18, 27, 14, 22, 4]
+2025-10-31 17:37:21,892 [INFO] (MainThread) [GPIO] Reset tất cả relay về trạng thái mặc định (THU BẬT).
+2025-10-31 17:37:21,993 [INFO] (MainThread) [GPIO] Reset hoàn tất.
+2025-10-31 17:37:21,994 [INFO] (QRThread) [QR] Thread QR Detection started (dynamic lane map enabled).
+2025-10-31 17:37:21,995 [INFO] (MainThread) =========================================
+2025-10-31 17:37:21,996 [INFO] (MainThread)   HỆ THỐNG PHÂN LOẠI SẴN SÀNG (V2.0 - Sensor-First)
+2025-10-31 17:37:21,997 [INFO] (MainThread)   GPIO Mode: REAL (Config: BCM)
+2025-10-31 17:37:21,998 [INFO] (MainThread)   Log file: system.log
+2025-10-31 17:37:21,998 [INFO] (MainThread)   Sort log file: sort_log.json
+2025-10-31 17:37:21,998 [INFO] (MainThread)   API State: http://<IP_CUA_PI>:3000 (Đã đổi port 3000)
+2025-10-31 17:37:21,998 [INFO] (MainThread)   Truy cập: http://<IP_CUA_PI>:3000 (không yêu cầu đăng nhập)
+2025-10-31 17:37:21,998 [INFO] (MainThread) =========================================
+2025-10-31 17:37:22,009 [INFO] (MainThread) [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:3000
+ * Running on http://192.168.0.102:3000
+2025-10-31 17:37:22,010 [INFO] (MainThread) [33mPress CTRL+C to quit[0m
+2025-10-31 17:37:22,260 [INFO] (Thread-1 (process_request_thread)) [WS] Client guest-7f796897f0 connected. Total: 1
+2025-10-31 17:37:32,513 [INFO] (Thread-3 (process_request_thread)) 192.168.0.104 - - [31/Oct/2025 17:37:32] "GET / HTTP/1.1" 200 -
+2025-10-31 17:37:32,660 [WARNING] (Thread-1 (process_request_thread)) [WS] Kết nối WebSocket bị đóng hoặc lỗi: Connection closed: 1001 
+2025-10-31 17:37:32,660 [INFO] (Thread-1 (process_request_thread)) [WS] Client guest-7f796897f0 disconnected. Total: 0
+2025-10-31 17:37:32,661 [INFO] (Thread-1 (process_request_thread)) 192.168.0.104 - - [31/Oct/2025 17:37:32] "GET /ws HTTP/1.1" 200 -
+2025-10-31 17:37:32,945 [INFO] (Thread-5 (process_request_thread)) 192.168.0.104 - - [31/Oct/2025 17:37:32] "GET /config HTTP/1.1" 200 -
+2025-10-31 17:37:32,952 [INFO] (Thread-4 (process_request_thread)) 192.168.0.104 - - [31/Oct/2025 17:37:32] "GET /video_feed HTTP/1.1" 200 -
+2025-10-31 17:37:33,124 [INFO] (Thread-6 (process_request_thread)) [WS] Client guest-7f796a1090 connected. Total: 1
+2025-10-31 17:38:01,775 [INFO] (QRThread) [QR] 'https://get-qr.com/ehk9v6' -> canon='HTTPSGETCOMEHK9V6' -> lane index 0 (Thêm vào hàng chờ)
+2025-10-31 17:38:17,713 [INFO] (MainThread) Đang tắt ThreadPoolExecutor...
+2025-10-31 17:38:17,713 [INFO] (MainThread) Đang cleanup GPIO...
+2025-10-31 17:38:17,714 [INFO] (MainThread) ✅ GPIO cleaned up.
+2025-10-31 17:38:17,714 [INFO] (MainThread) 👋 Tạm biệt!
+2025-10-31 17:46:07,574 [INFO] (MainThread) [CONFIG] Loaded 4 lanes config.
+2025-10-31 17:46:07,574 [INFO] (MainThread) [CONFIG] Loaded timing config: {'cycle_delay': 0.3, 'settle_delay': 0.2, 'sensor_debounce': 0.1, 'push_delay': 1, 'gpio_mode': 'BCM', 'id': 1}
+2025-10-31 17:46:07,575 [INFO] (MainThread) [GPIO] Đã đặt chế độ chân cắm là: BCM
+2025-10-31 17:46:07,575 [INFO] (MainThread) [GPIO] Setup SENSOR pins: [3, 23, 24, 25]
+2025-10-31 17:46:07,575 [INFO] (MainThread) [GPIO] Setup RELAY pins: [17, 18, 27, 14, 22, 4]
+2025-10-31 17:46:07,575 [INFO] (MainThread) [GPIO] Reset tất cả relay về trạng thái mặc định (THU BẬT).
+2025-10-31 17:46:07,676 [INFO] (MainThread) [GPIO] Reset hoàn tất.
+2025-10-31 17:46:07,677 [INFO] (QRThread) [QR] Thread QR Detection started (dynamic lane map enabled).
+2025-10-31 17:46:07,678 [INFO] (MainThread) =========================================
+2025-10-31 17:46:07,679 [INFO] (MainThread)   HỆ THỐNG PHÂN LOẠI SẴN SÀNG (V2.0 - Sensor-First)
+2025-10-31 17:46:07,679 [INFO] (MainThread)   GPIO Mode: REAL (Config: BCM)
+2025-10-31 17:46:07,679 [INFO] (MainThread)   Log file: system.log
+2025-10-31 17:46:07,681 [INFO] (MainThread)   Sort log file: sort_log.json
+2025-10-31 17:46:07,681 [INFO] (MainThread)   API State: http://<IP_CUA_PI>:3000 (Đã đổi port 3000)
+2025-10-31 17:46:07,681 [INFO] (MainThread)   Truy cập: http://<IP_CUA_PI>:3000 (không yêu cầu đăng nhập)
+2025-10-31 17:46:07,681 [INFO] (MainThread) =========================================
+2025-10-31 17:46:07,692 [INFO] (MainThread) [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:3000
+ * Running on http://192.168.0.102:3000
+2025-10-31 17:46:07,692 [INFO] (MainThread) [33mPress CTRL+C to quit[0m
+2025-10-31 17:46:17,178 [INFO] (Thread-1 (process_request_thread)) 192.168.0.104 - - [31/Oct/2025 17:46:17] "GET / HTTP/1.1" 200 -
+2025-10-31 17:46:17,750 [INFO] (Thread-3 (process_request_thread)) 192.168.0.104 - - [31/Oct/2025 17:46:17] "GET /config HTTP/1.1" 200 -
+2025-10-31 17:46:17,755 [INFO] (Thread-2 (process_request_thread)) [WS] Client guest-7f8e85c980 connected. Total: 1
+2025-10-31 17:46:17,759 [INFO] (Thread-4 (process_request_thread)) 192.168.0.104 - - [31/Oct/2025 17:46:17] "GET /video_feed HTTP/1.1" 200 -
+2025-10-31 17:46:29,196 [INFO] (QRThread) [QR] 'https://get-qr.com/ZeDzW4' -> canon='HTTPSGETCOMZEDZW4' -> lane index 2 (Thêm vào hàng chờ)
+2025-10-31 17:46:33,349 [INFO] (QRThread) [QR] 'https://get-qr.com/ZeDzW4' -> canon='HTTPSGETCOMZEDZW4' -> lane index 2 (Thêm vào hàng chờ)
+2025-10-31 17:46:42,616 [INFO] (QRThread) [QR] 'https://get-qr.com/ZeDzW4' -> canon='HTTPSGETCOMZEDZW4' -> lane index 2 (Thêm vào hàng chờ)
+2025-10-31 17:46:48,442 [INFO] (QRThread) [QR] 'https://get-qr.com/ZeDzW4' -> canon='HTTPSGETCOMZEDZW4' -> lane index 2 (Thêm vào hàng chờ)
+2025-10-31 17:46:58,683 [INFO] (QRThread) [QR] 'https://get-qr.com/16owwU' -> canon='HTTPSGETCOM16OWWU' -> lane index 1 (Thêm vào hàng chờ)
+2025-10-31 17:47:01,853 [INFO] (QRThread) [QR] 'https://get-qr.com/ZeDzW4' -> canon='HTTPSGETCOMZEDZW4' -> lane index 2 (Thêm vào hàng chờ)
+2025-10-31 17:47:04,641 [INFO] (QRThread) [QR] 'https://get-qr.com/16owwU' -> canon='HTTPSGETCOM16OWWU' -> lane index 1 (Thêm vào hàng chờ)
+2025-10-31 17:47:07,679 [INFO] (ConfigSaveThread) [CONFIG] Đã tự động lưu config (timing + lanes).
+2025-10-31 17:48:07,680 [INFO] (ConfigSaveThread) [CONFIG] Đã tự động lưu config (timing + lanes).
+2025-10-31 17:49:07,682 [INFO] (ConfigSaveThread) [CONFIG] Đã tự động lưu config (timing + lanes).
+2025-10-31 17:50:07,683 [INFO] (ConfigSaveThread) [CONFIG] Đã tự động lưu config (timing + lanes).
+2025-10-31 17:50:12,657 [INFO] (MainThread) Đang tắt ThreadPoolExecutor...
+2025-10-31 17:50:12,657 [INFO] (MainThread) Đang cleanup GPIO...
+2025-10-31 17:50:12,658 [INFO] (MainThread) ✅ GPIO cleaned up.
+2025-10-31 17:50:12,658 [INFO] (MainThread) 👋 Tạm biệt!

@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <title>Bảng Điều Khiển Hệ Thống Phân Loại (LITE – 4 Làn)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body{font-family: Inter, sans-serif;}
+    .sensor-light{width:14px;height:14px;border-radius:50%;transition:background-color .3s;}
+    .sensor-active{background:#f59e0b}.sensor-inactive{background:#4b5563}
+    .relay-light{width:12px;height:12px;border-radius:50%;transition:background-color .3s;}
+    .relay-active{background:#22c55e}.relay-inactive{background:#ef4444}
+    #qr-overlay{position:absolute;top:1rem;right:1rem;padding:.5rem 1rem;border-radius:.5rem;font-size:1.25rem;font-weight:bold;color:white;opacity:0;transition:opacity .5s;z-index:10;text-shadow:1px 1px 2px rgba(0,0,0,.5)}
+    .queue-timeline{display:flex;gap:.5rem;overflow-x:auto;padding:.5rem 0;scroll-behavior:smooth;scrollbar-width:none;-ms-overflow-style:none}
+    .queue-timeline::-webkit-scrollbar{display:none}
+    .queue-item{min-width:80px;text-align:center;font-weight:bold;color:white;border-radius:8px;padding:.25rem .5rem;transition:transform .4s,opacity .4s,min-width .4s;white-space:nowrap}
+    .queue-item.enter{transform:translateY(-10px);opacity:0;min-width:0;padding-left:0;padding-right:0}
+    .queue-item.show{transform:translateY(0);opacity:1;min-width:80px}
+    .queue-item.exit{transform:translateY(10px);opacity:0;min-width:0;padding-left:0;padding-right:0}
+    .queue-count-bar{transition:width .5s,background-color .5s}
+  </style>
+</head>
+<body class="bg-gray-900 text-gray-200 p-4">
+  <h1 class="text-2xl font-bold text-center mb-4 text-white mt-2">
+    ⚙️ Bảng Điều Khiển Hệ Thống Phân Loại (LITE – 4 Làn)
+  </h1>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <!-- Trái -->
+    <div class="lg:col-span-2 flex flex-col space-y-4">
+      <!-- Hàng chờ -->
+      <div class="bg-gray-800 p-3 rounded-lg shadow-lg">
+        <h2 class="text-lg font-semibold mb-2 text-white">📦 Hàng Chờ QR</h2>
+        <div class="bg-gray-900 rounded-md p-2 min-h-[4rem]">
+          <div id="queue-timeline" class="queue-timeline">
+            <span id="qr-queue-empty" class="text-gray-500 text-sm">Hàng chờ đang rỗng...</span>
+          </div>
+        </div>
+        <div class="mt-3">
+          <div class="flex justify-between text-xs text-gray-400">
+            <span>Tổng số vật đang chờ:</span><span id="queue-count-text">0 / 5</span>
+          </div>
+          <div class="w-full bg-gray-700 h-3 rounded-full mt-1">
+            <div id="queue-count-bar" class="h-3 bg-green-500 rounded-full queue-count-bar" style="width:0%"></div>
+          </div>
+        </div>
+        <button onclick="resetQueue()" class="mt-3 w-full bg-red-700 hover:bg-red-600 text-white py-1.5 px-2 rounded text-sm font-medium">
+          🧹 Reset Hàng Chờ
+        </button>
+      </div>
+
+      <!-- Camera -->
+      <div class="bg-gray-800 p-3 rounded-lg shadow-lg relative">
+        <h2 class="text-lg font-semibold mb-2 text-white">📷 Camera Giám Sát</h2>
+        <div class="bg-black rounded-md overflow-hidden aspect-video relative">
+          <img id="video_feed" src="/video_feed" class="w-full h-full object-cover" />
+          <div id="qr-overlay"></div>
+        </div>
+      </div>
+
+      <!-- Log -->
+      <div class="bg-gray-800 p-3 rounded-lg shadow-lg">
+        <h2 class="text-lg font-semibold mb-2 text-white">🧾 Logs Hệ Thống</h2>
+        <div id="log-container" class="h-64 bg-gray-900 rounded-md p-2 overflow-y-auto text-xs font-mono space-y-1"></div>
+      </div>
+
+      <!-- Editor Config JSON -->
+      <div class="bg-gray-800 p-4 rounded-lg shadow-lg">
+        <h2 class="text-xl font-semibold text-white mb-3">⚙️ Cấu Hình (JSON)</h2>
+        <textarea id="config-json-editor" class="w-full bg-gray-900 text-green-400 text-xs p-3 rounded-md border border-gray-700 font-mono resize-y" rows="12"></textarea>
+        <div class="flex space-x-3 mt-3">
+          <button onclick="saveConfig()" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg">💾 Lưu</button>
+          <button onclick="loadConfig()" class="flex-1 bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg">🔄 Tải lại</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phải -->
+    <div class="lg:col-span-1 space-y-3">
+      <div class="bg-gray-800 p-3 rounded-lg shadow-lg">
+        <h2 class="text-lg font-semibold mb-3 text-white">📊 Trạng Thái Lanes</h2>
+
+        <div id="lanes" class="space-y-3">
+          <!-- Lane 0 -->
+          <div class="border border-gray-700 p-3 rounded-md">
+            <div class="flex justify-between items-center mb-1">
+              <span id="lane-0-name" class="font-bold">Loại A</span>
+              <span id="status-text-0" class="text-xs px-2 py-1 rounded-full bg-gray-700">Sẵn sàng</span>
+            </div>
+            <div class="flex justify-between text-sm mb-1"><span>Đã đếm:</span><span id="lane-0-count" class="font-bold text-lg">0</span></div>
+            <div class="flex justify-between text-xs"><span>Sensor:</span><div id="lane-0-sensor" class="sensor-light sensor-inactive"></div></div>
+            <div class="flex justify-between text-xs mt-1"><span>Relay Thu:</span><div id="lane-0-grab" class="relay-light relay-inactive"></div></div>
+            <div class="flex justify-between text-xs mt-1"><span>Relay Đẩy:</span><div id="lane-0-push" class="relay-light relay-inactive"></div></div>
+          </div>
+
+          <!-- Lane 1 -->
+          <div class="border border-gray-700 p-3 rounded-md">
+            <div class="flex justify-between items-center mb-1">
+              <span id="lane-1-name" class="font-bold">Loại B</span>
+              <span id="status-text-1" class="text-xs px-2 py-1 rounded-full bg-gray-700">Sẵn sàng</span>
+            </div>
+            <div class="flex justify-between text-sm mb-1"><span>Đã đếm:</span><span id="lane-1-count" class="font-bold text-lg">0</span></div>
+            <div class="flex justify-between text-xs"><span>Sensor:</span><div id="lane-1-sensor" class="sensor-light sensor-inactive"></div></div>
+            <div class="flex justify-between text-xs mt-1"><span>Relay Thu:</span><div id="lane-1-grab" class="relay-light relay-inactive"></div></div>
+            <div class="flex justify-between text-xs mt-1"><span>Relay Đẩy:</span><div id="lane-1-push" class="relay-light relay-inactive"></div></div>
+          </div>
+
+          <!-- Lane 2 -->
+          <div class="border border-gray-700 p-3 rounded-md">
+            <div class="flex justify-between items-center mb-1">
+              <span id="lane-2-name" class="font-bold">Loại C</span>
+              <span id="status-text-2" class="text-xs px-2 py-1 rounded-full bg-gray-700">Sẵn sàng</span>
+            </div>
+            <div class="flex justify-between text-sm mb-1"><span>Đã đếm:</span><span id="lane-2-count" class="font-bold text-lg">0</span></div>
+            <div class="flex justify-between text-xs"><span>Sensor:</span><div id="lane-2-sensor" class="sensor-light sensor-inactive"></div></div>
+            <div class="flex justify-between text-xs mt-1"><span>Relay Thu:</span><div id="lane-2-grab" class="relay-light relay-inactive"></div></div>
+            <div class="flex justify-between text-xs mt-1"><span>Relay Đẩy:</span><div id="lane-2-push" class="relay-light relay-inactive"></div></div>
+          </div>
+
+          <!-- Lane 3 (D đi thẳng) -->
+          <div class="border border-gray-700 p-3 rounded-md">
+            <div class="flex justify-between items-center mb-1">
+              <span id="lane-3-name" class="font-bold">Làn D (Đi thẳng)</span>
+              <span id="status-text-3" class="text-xs px-2 py-1 rounded-full bg-gray-700">Sẵn sàng</span>
+            </div>
+            <div class="flex justify-between text-sm mb-1"><span>Đã đếm:</span><span id="lane-3-count" class="font-bold text-lg">0</span></div>
+            <div class="flex justify-between text-xs"><span>Sensor:</span><div id="lane-3-sensor" class="sensor-light sensor-inactive"></div></div>
+            <div class="flex justify-between text-xs mt-1"><span>Relay Thu:</span><div id="lane-3-grab" class="relay-light relay-inactive"></div></div>
+            <div class="flex justify-between text-xs mt-1"><span>Relay Đẩy:</span><div id="lane-3-push" class="relay-light relay-inactive"></div></div>
+          </div>
+        </div>
+
+        <button onclick="resetCount('all')" class="mt-3 w-full bg-red-600 hover:bg-red-700 text-white py-1.5 px-2 rounded text-sm font-medium">
+          Reset Toàn Bộ Đếm
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let ws, qrTimer;
+    const MAX_QUEUE = 5;
+    const laneNamesMap = {};
+    window._prevQueue = [];
+
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("video_feed").src = "/video_feed";
+      connectWS();
+      loadConfig();
+    });
+
+    function connectWS(){
+      const url = `${location.protocol === "https:" ? "wss:" : "ws:"}//${location.host}/ws`;
+      ws = new WebSocket(url);
+      ws.onmessage = e => {
+        const d = JSON.parse(e.data);
+        if (d.type === "state_update") updateState(d.state);
+        else if (d.type === "log") addLog(d.log_type, d.message, d.timestamp, d.data);
+      };
+      ws.onclose = () => {
+        addLog("error","Mất kết nối WebSocket. Thử lại sau 3s...");
+        setTimeout(connectWS, 3000);
+      };
+    }
+
+    function addLog(type, msg, time, data){
+      const log = document.getElementById("log-container");
+      const t = time || new Date().toLocaleTimeString();
+      let color = "text-gray-400", prefix = "[INFO]";
+      if(type==="success"){color="text-green-400";prefix="[OK]"}
+      else if(type==="error"){color="text-red-400";prefix="[LỖI]"}
+      else if(type==="warn"){color="text-yellow-400";prefix="[WARN]"}
+      else if(type==="sort"){color="text-cyan-400";prefix="[SORT]"; if(data?.name) showQrOverlay(data.name,'bg-cyan-600')}
+      else if(type==="qr"){color="text-blue-400";prefix="[QR]"; showQrOverlay(msg.replace('Phát hiện ','') || 'QR','bg-blue-600')}
+      const row = document.createElement("div");
+      row.className = `flex ${color}`;
+      row.innerHTML = `<span class='w-20'>[${t}]</span><span class='w-16'>${prefix}</span><span class='flex-1'>${msg}</span>`;
+      log.appendChild(row); log.scrollTop = log.scrollHeight;
+      if (data?.queue) updateQueueUI(data.queue);
+    }
+
+    function updateQueueUI(q){
+      const box = document.getElementById("queue-timeline");
+      const empty = document.getElementById("qr-queue-empty");
+      const oldItems = Array.from(box.querySelectorAll('.queue-item'));
+      const newQueue = q.slice();
+      window._prevQueue = newQueue;
+
+      const count = q.length;
+      const percent = Math.min((count/MAX_QUEUE)*100, 100);
+      const bar = document.getElementById("queue-count-bar");
+      const text = document.getElementById("queue-count-text");
+      bar.style.width = `${percent}%`;
+      bar.className = `h-3 rounded-full queue-count-bar ${percent>80?'bg-red-600':percent>50?'bg-yellow-500':'bg-green-500'}`;
+      text.textContent = `${count} / ${MAX_QUEUE}`;
+
+      if(q.length===0){
+        box.innerHTML=""; box.appendChild(empty); empty.classList.remove("hidden"); box.scrollLeft=0; return;
+      } else empty.classList.add("hidden");
+
+      const colors = ['bg-blue-600','bg-green-600','bg-yellow-500','bg-purple-600','bg-pink-600'];
+      const fragment = document.createDocumentFragment();
+
+      oldItems.forEach(it=>{
+        const idx = parseInt(it.dataset.index);
+        if(newQueue.indexOf(idx)===-1){
+          it.classList.replace('show','exit');
+          setTimeout(()=>it.remove(),400);
+        }
+      });
+
+      newQueue.forEach((idx,i)=>{
+        let el = box.querySelector(`[data-index="${idx}"]`);
+        const laneName = laneNamesMap[idx] || `Làn ${idx+1}`;
+        const colorClass = colors[idx%colors.length];
+        const isHead = (i===0);
+        if(!el){
+          el = document.createElement("span");
+          el.className = `queue-item ${colorClass} enter`;
+          el.dataset.index = idx;
+          el.textContent = laneName;
+          fragment.appendChild(el);
+          setTimeout(()=>el.classList.replace('enter','show'),10);
+        }else{
+          el.classList.replace('exit','show');
+        }
+        el.classList.toggle('ring-2', isHead);
+        el.classList.toggle('ring-white', isHead);
+        el.classList.toggle('shadow-lg', isHead);
+        el.innerHTML = isHead ? `→ ${laneName}` : laneName;
+        el.style.minWidth = isHead ? '100px' : '80px';
+        if(el.parentNode===box) box.removeChild(el);
+      });
+
+      newQueue.forEach((idx,i)=>{
+        const el = box.querySelector(`[data-index="${idx}"]`) || fragment.querySelector(`[data-index="${idx}"]`);
+        if(el){
+          const next = box.children[i];
+          box.insertBefore(el, next);
+        }
+      });
+      box.appendChild(fragment);
+      box.scrollLeft = box.scrollWidth;
+    }
+
+    function updateState(s){
+      s.lanes.forEach((l,i)=>{
+        const nameEl = document.getElementById(`lane-${i}-name`);
+        const cntEl  = document.getElementById(`lane-${i}-count`);
+        const sensEl = document.getElementById(`lane-${i}-sensor`);
+        const grabEl = document.getElementById(`lane-${i}-grab`);
+        const pushEl = document.getElementById(`lane-${i}-push`);
+        const stEl   = document.getElementById(`status-text-${i}`);
+        if(!nameEl) return;
+        laneNamesMap[i] = l.name;
+        nameEl.textContent = l.name;
+        cntEl.textContent = l.count;
+        sensEl.classList.toggle("sensor-active", l.sensor_reading===0);
+        sensEl.classList.toggle("sensor-inactive", l.sensor_reading!==0);
+        grabEl.classList.toggle("relay-active", l.relay_grab===1);
+        pushEl.classList.toggle("relay-active", l.relay_push===1);
+        stEl.textContent = l.status;
+        const waiting = /Đang chờ|Đang phân loại/.test(l.status);
+        stEl.classList.toggle("bg-blue-500", waiting);
+        stEl.classList.toggle("bg-gray-700", !waiting);
+      });
+    }
+
+    async function fetchAPI(url, opts={}){
+      const r = await fetch(url, opts);
+      if(!r.ok){
+        let e="HTTP "+r.status;
+        try{ const j=await r.json(); e=j.error||e }catch{}
+        throw new Error(e);
+      }
+      return r;
+    }
+
+    async function loadConfig(){
+      try{
+        const r = await fetchAPI("/config");
+        const j = await r.json();
+        document.getElementById("config-json-editor").value = JSON.stringify(j,null,2);
+        addLog("success","Đã tải cấu hình.");
+      }catch(e){
+        addLog("error","Không thể tải cấu hình: "+e.message);
+        document.getElementById("config-json-editor").value = "";
+      }
+    }
+
+    async function saveConfig(){
+      let obj;
+      try{
+        obj = JSON.parse(document.getElementById("config-json-editor").value||"{}");
+      }catch(e){
+        return addLog("error","JSON không hợp lệ.");
+      }
+      try{
+        const r = await fetchAPI("/update_config",{
+          method:"POST", headers:{"Content-Type":"application/json"},
+          body: JSON.stringify(obj)
+        });
+        const j = await r.json();
+        addLog("success", j.message || "Đã lưu cấu hình.");
+      }catch(e){
+        addLog("error","Lưu cấu hình lỗi: "+e.message);
+      }
+    }
+
+    async function resetQueue(){
+      try{
+        const r = await fetchAPI("/api/queue/reset",{method:"POST"});
+        const j = await r.json();
+        addLog("warn", j.message || "Đã reset hàng chờ.");
+      }catch(e){
+        addLog("error","Reset hàng chờ lỗi: "+e.message);
+      }
+    }
+
+    function resetCount(laneIndex){
+      if(!ws || ws.readyState!==WebSocket.OPEN) return addLog("error","Mất kết nối server.");
+      ws.send(JSON.stringify({action:"reset_count", lane_index: laneIndex}));
+      addLog("info","Đã gửi lệnh reset đếm.");
+    }
+
+    function showQrOverlay(text,bg){
+      const ov = document.getElementById("qr-overlay");
+      if(qrTimer) clearTimeout(qrTimer);
+      ov.textContent = text || 'QR';
+      ov.className = ''; ov.classList.add('absolute','top-4','right-4','p-2','px-4','rounded-lg','text-xl','font-bold','text-white','opacity-0','transition-opacity','duration-500','shadow-lg', bg);
+      setTimeout(()=>ov.style.opacity='1', 10);
+      qrTimer = setTimeout(()=> ov.style.opacity='0', 2200);
+    }
+  </script>
+</body>
+</html>
