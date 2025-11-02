@@ -1,7 +1,3 @@
-# -*- coding: utf-8 -*-
-# TÊN FILE: app.py
-# NỘI DUNG: v6.4 + Sửa lỗi JSON (gửi data lồng nhau cho "qr" và "unknown_qr")
-
 import cv2
 import time
 import json
