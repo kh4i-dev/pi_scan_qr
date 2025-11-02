@@ -7,6 +7,8 @@ import time
 import json
 import threading
 import logging
+import sqlite3
+from datetime import datetime
 
 try:
     from ultralytics import YOLO
@@ -1045,7 +1047,8 @@ def lane_sensor_monitoring_thread():
     global last_sensor_state, last_sensor_trigger_time
     global queue_head_since
     
-    last_sensor_state_prev = list(last_sensor_state) 
+    last_sensor_state_prev = list(last_sensor_state)
+
 
     try:
         while main_loop_running:
@@ -1059,6 +1062,15 @@ def lane_sensor_monitoring_thread():
                 current_queue_timeout = cfg_timing.get('queue_head_timeout', 15.0)
                 num_lanes = len(system_state['lanes'])
             now = time.time()
+
+            if len(last_sensor_state_prev) != num_lanes:
+                with state_lock:
+                    reference_state = list(last_sensor_state)
+                if len(reference_state) < num_lanes:
+                    reference_state.extend([1] * (num_lanes - len(reference_state)))
+                elif len(reference_state) > num_lanes:
+                    reference_state = reference_state[:num_lanes]
+                last_sensor_state_prev = reference_state
 
             current_queue_indices = []
             with processing_queue_lock:
@@ -1110,7 +1122,9 @@ def lane_sensor_monitoring_thread():
                     if 0 <= i < len(system_state["lanes"]):
                         system_state["lanes"][i]["sensor_reading"] = sensor_now
 
-                if sensor_now == 0 and last_sensor_state_prev[i] == 1:
+                prev_state = last_sensor_state_prev[i] if i < len(last_sensor_state_prev) else 1
+
+                if sensor_now == 0 and prev_state == 1:
                     if (now - last_sensor_trigger_time[i]) > debounce_time:
                         last_sensor_trigger_time[i] = now
 
@@ -1145,7 +1159,8 @@ def lane_sensor_monitoring_thread():
                             with processing_queue_lock:
                                 broadcast_log({"log_type": "warn", "message": f"Sensor {lane_name_for_log} kích hoạt (vật lạ/nhiễu). Bỏ qua.", "queue": [j["lane_index"] for j in processing_queue]})
                 
-                last_sensor_state_prev[i] = sensor_now
+                if i < len(last_sensor_state_prev):
+                    last_sensor_state_prev[i] = sensor_now
 
             adaptive_sleep = 0.05 if all(s == 1 for s in last_sensor_state_prev) and last_entry_sensor_state == 1 else 0.01
             time.sleep(adaptive_sleep)
