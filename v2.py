@@ -1,10 +1,11 @@
+
 import cv2
 import time
 import json
 import threading
 import logging
-import sqlite3
-from datetime import datetime
+import sqlite3 
+from datetime import datetime 
 
 try:
     from ultralytics import YOLO
@@ -476,8 +477,6 @@ def periodic_config_save():
                 with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
                     json.dump(config_to_save, f, indent=4)
             logging.info("[CONFIG] Đã tự động lưu config (timing, ai, lanes).")
-            
-            # (XÓA) Bỏ phần lưu sort_log.json
 
         except Exception as e:
             logging.error(f"[CONFIG] Lỗi tự động lưu config: {e}") 
@@ -815,7 +814,6 @@ def qr_detection_loop():
                         current_queue_for_log = list(qr_queue) 
                     
                     # (*** SỬA LỖI JSON ***)
-                    # Gửi một đối tượng lồng nhau, thay vì 3 biến flat
                     broadcast_log({
                         "log_type": "qr", 
                         "data": {"data_raw": data_raw, "data_key": data_key}
@@ -823,11 +821,9 @@ def qr_detection_loop():
                     logging.info(f"[QR] '{data_raw}' -> canon='{data_key}' -> lane index {idx} (Thêm vào hàng chờ QR Tạm, size={len(current_queue_for_log)})")
                             
                 elif data_key == "NG":
-                    # qr_ng chỉ gửi data string, index.html xử lý đúng
                     broadcast_log({"log_type": "qr_ng", "data": data_raw})
                 else:
                     # (*** SỬA LỖI JSON ***)
-                    # Gửi một đối tượng lồng nhau
                     broadcast_log({
                         "log_type": "unknown_qr", 
                         "data": {"data_raw": data_raw, "data_key": data_key}
@@ -1017,7 +1013,8 @@ def entry_sensor_monitoring_thread():
                 with processing_queue_lock:
                     processing_queue.append(job)
                     if len(processing_queue) == 1:
-                        queue_head_since = now
+                          # dùng chính thời điểm job vào hàng để giữ đúng tuổi của job đầu hàng chờ
+                        queue_head_since = job.get("entry_time", now)
                     current_queue_len = len(processing_queue)
                     current_queue_indices = [j["lane_index"] for j in processing_queue]
                 
@@ -1037,14 +1034,14 @@ def entry_sensor_monitoring_thread():
         time.sleep(0.05)
 
 # =============================
-#       LUỒNG SENSOR LÀN (v3)
+#       LUỒNG SENSOR LÀN (v3 + Sửa lỗi Race)
 # =============================
 def lane_sensor_monitoring_thread():
     global last_sensor_state, last_sensor_trigger_time
     global queue_head_since
     
-    last_sensor_state_prev = list(last_sensor_state)
-
+    # Khởi tạo 1 lần
+    last_sensor_state_prev = list(last_sensor_state) 
 
     try:
         while main_loop_running:
@@ -1058,15 +1055,22 @@ def lane_sensor_monitoring_thread():
                 current_queue_timeout = cfg_timing.get('queue_head_timeout', 15.0)
                 num_lanes = len(system_state['lanes'])
             now = time.time()
-
+            
+            # (*** BẢN VÁ CỦA BẠN - Fix 1 ***)
+            # Đồng bộ kích thước của last_sensor_state_prev nếu config thay đổi
             if len(last_sensor_state_prev) != num_lanes:
                 with state_lock:
-                    reference_state = list(last_sensor_state)
+                    # Lấy state mới nhất (có thể đã thay đổi)
+                    reference_state = [lane['sensor_reading'] for lane in system_state['lanes']]
+                
                 if len(reference_state) < num_lanes:
                     reference_state.extend([1] * (num_lanes - len(reference_state)))
                 elif len(reference_state) > num_lanes:
                     reference_state = reference_state[:num_lanes]
+                
                 last_sensor_state_prev = reference_state
+                logging.warning(f"[SENSOR] Đã phát hiện thay đổi config. Đồng bộ last_sensor_state_prev (size {num_lanes}).")
+
 
             current_queue_indices = []
             with processing_queue_lock:
@@ -1086,8 +1090,11 @@ def lane_sensor_monitoring_thread():
                             system_state["queue_indices"] = current_queue_indices
                             system_state["entry_queue_size"] = len(current_queue_indices)
 
-                        queue_head_since = now if processing_queue else 0.0
-
+                            if processing_queue:
+                                # chuyển sang job đầu mới và lấy đúng thời điểm nó vào hàng chờ để tính timeout tiếp
+                                queue_head_since = processing_queue[0].get("entry_time", now)
+                            else:
+                                queue_head_since = 0.0
                         broadcast_log({
                             "log_type": "warn",
                             "message": f"TIMEOUT! Đã tự động xóa Job cho {expected_lane_name} khỏi hàng chờ chính (>{current_queue_timeout}s).",
@@ -1118,6 +1125,8 @@ def lane_sensor_monitoring_thread():
                     if 0 <= i < len(system_state["lanes"]):
                         system_state["lanes"][i]["sensor_reading"] = sensor_now
 
+                # (*** BẢN VÁ CỦA BẠN - Fix 2 ***)
+                # Đọc trạng thái cũ một cách an toàn
                 prev_state = last_sensor_state_prev[i] if i < len(last_sensor_state_prev) else 1
 
                 if sensor_now == 0 and prev_state == 1:
@@ -1125,36 +1134,61 @@ def lane_sensor_monitoring_thread():
                         last_sensor_trigger_time[i] = now
 
                         job_to_run = None
-                        is_head_match = False
-                        
-                        with processing_queue_lock:
-                            if processing_queue and processing_queue[0]["lane_index"] == i:
-                                is_head_match = True
-                                job_to_run = processing_queue.pop(0)
-                                queue_head_since = now if processing_queue else 0.0
-                        
-                        if is_head_match and job_to_run:
-                            with processing_queue_lock:
-                                current_queue_indices = [j["lane_index"] for j in processing_queue]
+                        match_index = None
+                    with processing_queue:
+                        if queue_head_since == 0.0:
+                            queue_head_since = processing_queue[0].get("entry_time", now)
+                                # duyệt toàn bộ hàng chờ để chọn job đúng làn đầu tiên khớp (kể cả khi không nằm ở đầu)
+                        for idx, pending_job in enumerate(processing_queue):
+                            if pending_job["lane_index"] == i:
+                                match_index = idx
+                                job_to_run = processing_queue.pop(idx)
+                                break
+                        if job_to_run:
+                            if processing_queue:
+                                if match_index == 0:
+                                # nếu đã lấy job đầu hàng chờ thì cập nhật sang job kế tiếp với tuổi gốc của nó
+                                    queue_head_since = processing_queue[0].get("entry_time", now)
+                                else:
+                                # còn nếu job ở giữa hàng chờ được lấy ra thì job đầu vẫn giữ nguyên tuổi ban đầu
+                                    queue_head_since = processing_queue[0].get("entry_time", queue_head_since)
+                            else:
+                                queue_head_since = 0.0
 
-                            with state_lock:
-                                system_state["queue_indices"] = current_queue_indices
-                                system_state["entry_queue_size"] = len(current_queue_indices)
-                                if 0 <= i < len(system_state["lanes"]):
-                                    lane_ref = system_state["lanes"][i]
-                                    if push_pin is None: lane_ref["status"] = "Đang đi thẳng..."
-                                    else: lane_ref["status"] = "Đang chờ đẩy"
+                        current_queue_indices = [j["lane_index"] for j in processing_queue]
+                else:
+                    current_queue_indices = []
+
+            with state_lock:
+                system_state["queue_indices"] = current_queue_indices
+                system_state["entry_queue_size"] = len(current_queue_indices)
+                if job_to_run and 0 <= i < len(system_state["lanes"]):
+                    lane_ref = system_state["lanes"][i]
+                if push_pin is None:
+                    lane_ref["status"] = "Đang đi thẳng..."
+                else:
+                    lane_ref["status"] = "Đang chờ đẩy"
+
+            if job_to_run:          
                             
                             threading.Thread(target=sorting_process, args=(i,), daemon=True).start()
+                            job_position = "đầu hàng chờ" if match_index == 0 else f"vị trí {match_index + 1}"
+                            broadcast_log({
+                                "log_type": "info",
+                                "message": f"Sensor {lane_name_for_log} khớp Job ở {job_position}. Bắt đầu xử lý.",
+                                "queue": current_queue_indices
+                            })
+                            logging.info(f"[LANE_S] {lane_name_for_log} kích hoạt. Khớp Job tại {job_position}. Queue chính: {len(current_queue_indices)}")                                
                             
-                            broadcast_log({"log_type": "info", "message": f"Sensor {lane_name_for_log} khớp Job đầu hàng chờ. Bắt đầu xử lý.", "queue": current_queue_indices})
-                            logging.info(f"[LANE_S] {lane_name_for_log} kích hoạt. KHỚP Job. Queue chính: {len(current_queue_indices)}")
                         
-                        else:
-                            logging.warning(f"[SENSOR] ⚠️ {lane_name_for_log} kích hoạt nhưng không khớp Job đầu hàng chờ. Bỏ qua.")
-                            with processing_queue_lock:
-                                broadcast_log({"log_type": "warn", "message": f"Sensor {lane_name_for_log} kích hoạt (vật lạ/nhiễu). Bỏ qua.", "queue": [j["lane_index"] for j in processing_queue]})
-                
+            else:
+                logging.warning(f"[SENSOR] ⚠️ {lane_name_for_log} kích hoạt nhưng không tìm thấy Job khớp. Bỏ qua.")
+                broadcast_log({
+                                "log_type": "warn",
+                                "message": f"Sensor {lane_name_for_log} kích hoạt (vật lạ/nhiễu). Bỏ qua.",
+                                "queue": current_queue_indices
+                            })  
+                # Ghi trạng thái cũ một cách an toàn
                 if i < len(last_sensor_state_prev):
                     last_sensor_state_prev[i] = sensor_now
 
@@ -1326,6 +1360,8 @@ def get_sort_log():
 def update_config():
     global lanes_config, RELAY_PINS, SENSOR_PINS, RELAY_CONVEYOR_PIN
     global QUEUE_HEAD_TIMEOUT
+    # (MỚI) Thêm các biến global này để hàm có thể reset chúng
+    global last_sensor_state, last_sensor_trigger_time, auto_test_last_state, auto_test_last_trigger
 
     new_config_data = request.json
     if not new_config_data:
@@ -1372,7 +1408,7 @@ def update_config():
             RELAY_CONVEYOR_PIN = new_conveyor_pin
             restart_required = True
         
-        logging.info(f"[CONFIG] Đã cập nhật động: Queue Timeout={QUEUE_HEAD_TIMEOUT}s")
+        logging.info(f"[CONFIG] Đã cập nhật động: Thời gian giữ Job đầu hàng chờ={QUEUE_HEAD_TIMEOUT}s")
         logging.info(f"[CONFIG] Đã cập nhật động: Stop Conveyor={current_timing.get('stop_conveyor_on_entry')}")
         logging.info(f"[CONFIG] Đã cập nhật động: Stability Delay={current_timing.get('stability_delay')}")
 
@@ -1407,8 +1443,11 @@ def update_config():
                 if lane_cfg.get("pull_pin") is not None: new_relay_pins.append(lane_cfg["pull_pin"])
             
             system_state['lanes'] = new_system_lanes
+            
+            # (MỚI) Reset các mảng state cho luồng sensor
             last_sensor_state = [1] * num_lanes; last_sensor_trigger_time = [0.0] * num_lanes
             auto_test_last_state = [1] * num_lanes; auto_test_last_trigger = [0.0] * num_lanes
+            
             RELAY_PINS, SENSOR_PINS = new_relay_pins, new_sensor_pins
             config_to_save['lanes_config'] = lanes_config
             restart_required = True
@@ -1662,7 +1701,6 @@ if __name__ == "__main__":
         logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] (%(threadName)s) %(message)s',
                             handlers=[logging.FileHandler(LOG_FILE, encoding='utf-8'), logging.StreamHandler()])
         
-        # (MỚI) Khởi tạo CSDL trước khi load config
         init_database()
         
         load_local_config()
@@ -1710,7 +1748,7 @@ if __name__ == "__main__":
         threading.Thread(target=periodic_config_save, name="ConfigSaveThread", daemon=True).start()
 
         logging.info("=========================================")
-        logging.info("  HỆ THỐNG PHÂN LOẠI SẴN SÀNG (v6.4 - SQLite Log)")
+        logging.info("  HỆ THỐNG PHÂN LOẠI SẴN SÀNG (v6.5 - StabilityFix)")
         logging.info(f"  Logic: FIFO Gác cổng (Đã kích hoạt)")
         logging.info(f"  GPIO Mode: {'REAL' if isinstance(GPIO, RealGPIO) else 'MOCK'} (Config: {loaded_gpio_mode})")
         logging.info(f"  API State: http://<IP_CUA_PI>:3000")
