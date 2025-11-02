@@ -4,33 +4,48 @@
         "settle_delay": 0.2,
         "sensor_debounce": 0.1,
         "push_delay": 0.0,
-        "gpio_mode": "BCM"
+        "gpio_mode": "BCM",
+        "queue_head_timeout": 15.0,
+        "pending_trigger_timeout": 0.5,
+        "RELAY_CONVEYOR_PIN": null,
+        "stop_conveyor_on_entry": false,
+        "stability_delay": 0.25
+    },
+    "ai_config": {
+        "enable_ai": false,
+        "ai_priority": false,
+        "model_path": "best.pt",
+        "min_confidence": 0.6,
+        "ai_class_to_id_map": {
+            "APPLE": "SP001",
+            "ORANGE": "SP002"
+        }
     },
     "lanes_config": [
         {
-            "id": "A",
-            "name": "Ph\u00e2n lo\u1ea1i A (\u0110\u1ea9y)",
+            "id": "SP001",
+            "name": "Ph\u00e2n lo\u1ea1i A",
             "sensor_pin": 3,
             "push_pin": 17,
             "pull_pin": 18
         },
         {
-            "id": "B",
-            "name": "Ph\u00e2n lo\u1ea1i B (\u0110\u1ea9y)",
+            "id": "SP002",
+            "name": "Ph\u00e2n lo\u1ea1i B",
             "sensor_pin": 23,
             "push_pin": 27,
             "pull_pin": 14
         },
         {
-            "id": "C",
-            "name": "Ph\u00e2n lo\u1ea1i C (\u0110\u1ea9y)",
+            "id": "SP003",
+            "name": "Ph\u00e2n lo\u1ea1i C",
             "sensor_pin": 24,
             "push_pin": 22,
             "pull_pin": 4
         },
         {
-            "id": "D",
-            "name": "Lane D (\u0110i th\u1eb3ng/Tho\u00e1t)",
+            "id": "NG",
+            "name": "S\u1ea3n Ph\u1ea9m NG(B\u1ecf)",
             "sensor_pin": null,
             "push_pin": null,
             "pull_pin": null
