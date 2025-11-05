@@ -1125,9 +1125,17 @@ def restart_conveyor_after_delay(delay_seconds):
 # =============================
 #       LUỒNG SENSOR LÀN (FIX #9)
 # =============================
+# [GIỐNG FILE CŨ] ... (Giữ nguyên phần đầu file)
+
+# =============================
+#       LUỒNG SENSOR LÀN (FIX #9)
+# =============================
 def lane_sensor_monitoring_thread():
     global last_sensor_state, last_sensor_trigger_time
     global queue_head_since
+    
+    # (MỚI) Thêm biến cho logic Auto-Test
+    global auto_test_last_state, auto_test_last_trigger
     
     last_sensor_state_prev = list(last_sensor_state) 
 
@@ -1146,9 +1154,11 @@ def lane_sensor_monitoring_thread():
 
     try:
         while main_loop_running:
-            if AUTO_TEST_ENABLED or error_manager.is_maintenance():
+            # (SỬA) Chỉ check bảo trì. Logic AUTO_TEST sẽ được xử lý bên dưới.
+            if error_manager.is_maintenance():
                 time.sleep(0.1); continue
 
+            # Lấy config (cần cho cả 2 chế độ)
             debounce_time, current_queue_timeout, num_lanes = 0.1, 15.0, 0
             with state_lock:
                 cfg_timing = system_state['timing_config']
@@ -1157,6 +1167,55 @@ def lane_sensor_monitoring_thread():
                 num_lanes = len(system_state['lanes'])
             now = time.time()
             
+            # --- (MỚI) LOGIC AUTO TEST ---
+            if AUTO_TEST_ENABLED:
+                
+                # Đảm bảo mảng auto_test_last_state có kích thước đúng
+                if len(auto_test_last_state) != num_lanes:
+                    auto_test_last_state = [1] * num_lanes
+                    auto_test_last_trigger = [0.0] * num_lanes
+                    logging.warning(f"[AUTO-TEST] Đã đồng bộ kích thước mảng auto_test (size {num_lanes}).")
+
+                for i in range(num_lanes):
+                    sensor_pin, push_pin, pull_pin, lane_name_for_log = None, None, None, "UNKNOWN"
+                    with state_lock:
+                        if not (0 <= i < len(system_state["lanes"])): continue
+                        lane_for_read = system_state["lanes"][i]
+                        sensor_pin = lane_for_read.get("sensor_pin")
+                        push_pin = lane_for_read.get("push_pin")
+                        pull_pin = lane_for_read.get("pull_pin")
+                        lane_name_for_log = lane_for_read['name']
+
+                    # Bỏ qua nếu không có sensor hoặc không phải lane phân loại (không có cả 2 pin)
+                    if sensor_pin is None or (push_pin is None or pull_pin is None):
+                        continue 
+
+                    try:
+                        sensor_now = GPIO.input(sensor_pin)
+                    except Exception as gpio_e:
+                        logging.error(f"[AUTO-TEST] Lỗi đọc GPIO pin {sensor_pin} ({lane_name_for_log}): {gpio_e}")
+                        error_manager.trigger_maintenance(f"Lỗi đọc sensor pin {sensor_pin} ({lane_name_for_log}): {gpio_e}")
+                        continue
+                    
+                    # Cập nhật state (để UI hiển thị)
+                    with state_lock:
+                        if 0 <= i < len(system_state["lanes"]):
+                            system_state["lanes"][i]["sensor_reading"] = sensor_now
+
+                    prev_state = auto_test_last_state[i]
+                    
+                    if sensor_now == 0 and prev_state == 1: # Cạnh xuống (mới kích hoạt)
+                        if (now - auto_test_last_trigger[i]) > debounce_time:
+                            auto_test_last_trigger[i] = now
+                            broadcast_log({"log_type": "info", "message": f"[Auto-Test] Kích hoạt {lane_name_for_log}!"})
+                            # Chạy 1 chu trình sorting (dùng thread để không block)
+                            threading.Thread(target=sorting_process, args=(i, "AUTO-TEST"), daemon=True).start()
+                    
+                    auto_test_last_state[i] = sensor_now
+
+                time.sleep(0.02) # Quét nhanh khi ở auto-test
+                continue # Bỏ qua logic queue bên dưới
+            # --- KẾT THÚC LOGIC AUTO TEST ---
             if len(last_sensor_state_prev) != num_lanes:
                 with state_lock:
                     reference_state = [lane['sensor_reading'] for lane in system_state['lanes']]
