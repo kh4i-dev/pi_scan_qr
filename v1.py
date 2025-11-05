@@ -1,11 +1,12 @@
+
 import cv2
 import time
 import json
 import threading
 import logging
 import sqlite3 
-import copy     
-import uuid     
+import copy     # Fix #8
+import uuid     # Fix #9
 from datetime import datetime 
 
 try:
@@ -155,13 +156,16 @@ CAMERA_INDEX = 0
 CONFIG_FILE = 'config.json'
 LOG_FILE = 'system.log'
 DATABASE_FILE = 'sort_log.db'
-QUEUE_STATE_FILE = 'queue_state.json' 
+QUEUE_STATE_FILE = 'queue_state.json' # Fix #7
 ACTIVE_LOW = True
 AUTH_ENABLED = os.environ.get("APP_AUTH_ENABLED", "false").strip().lower() in {"1", "true", "yes", "on"}
 USERNAME = os.environ.get("APP_USERNAME", "admin")
 PASSWORD = os.environ.get("APP_PASSWORD", "123")
-SENSOR_ENTRY_PIN = 6
-SENSOR_ENTRY_MOCK_PIN = 99
+# (SỬA) Vô hiệu hóa Sensor Gác Cổng
+# SENSOR_ENTRY_PIN = 6
+# SENSOR_ENTRY_MOCK_PIN = 99
+SENSOR_ENTRY_PIN = None
+SENSOR_ENTRY_MOCK_PIN = None
 
 # =============================
 #     KHỞI TẠO CÁC ĐỐI TƯỢNG
@@ -229,7 +233,8 @@ system_state = {
     "is_mock": isinstance(GPIO, MockGPIO), "maintenance_mode": False,
     "auth_enabled": AUTH_ENABLED, "gpio_mode": "BCM", "last_error": None,
     "queue_indices": [],
-    "sensor_entry_reading": 1,
+    # (SỬA) Vô hiệu hóa
+    # "sensor_entry_reading": 1,
     "entry_queue_size": 0,
     "ai_config": {},
     "camera_settings": {}
@@ -261,8 +266,9 @@ AUTO_TEST_ENABLED = False
 auto_test_last_state = []
 auto_test_last_trigger = []
 
-last_entry_sensor_state = 1
-last_entry_sensor_trigger_time = 0.0
+# (SỬA) Vô hiệu hóa
+# last_entry_sensor_state = 1
+# last_entry_sensor_trigger_time = 0.0
 
 # =============================
 # KHỞI TẠO CƠ SỞ DỮ LIỆU
@@ -432,9 +438,10 @@ def load_local_config():
     new_system_lanes = []
     RELAY_PINS = []; SENSOR_PINS = []
     
-    if SENSOR_ENTRY_PIN: SENSOR_PINS.append(SENSOR_ENTRY_PIN)
-    if isinstance(GPIO, MockGPIO) and SENSOR_ENTRY_MOCK_PIN:
-        SENSOR_PINS.append(SENSOR_ENTRY_MOCK_PIN)
+    # (SỬA) Vô hiệu hóa
+    # if SENSOR_ENTRY_PIN: SENSOR_PINS.append(SENSOR_ENTRY_PIN)
+    # if isinstance(GPIO, MockGPIO) and SENSOR_ENTRY_MOCK_PIN:
+    #     SENSOR_PINS.append(SENSOR_ENTRY_MOCK_PIN)
         
     RELAY_CONVEYOR_PIN = loaded_config['timing_config'].get('RELAY_CONVEYOR_PIN')
     if RELAY_CONVEYOR_PIN:
@@ -462,7 +469,8 @@ def load_local_config():
         system_state['lanes'] = new_system_lanes
         system_state['auth_enabled'] = AUTH_ENABLED
         system_state['is_mock'] = isinstance(GPIO, MockGPIO)
-        system_state['sensor_entry_reading'] = 1
+        # (SỬA) Vô hiệu hóa
+        # system_state['sensor_entry_reading'] = 1
         system_state['entry_queue_size'] = 0
         system_state['ai_config'] = loaded_config['ai_config']
         system_state['camera_settings'] = loaded_config['camera_settings']
@@ -505,7 +513,8 @@ def load_local_config():
         logging.warning("[AI] Tính năng AI hiện đang TẮT (do config hoặc lỗi).")
     logging.info(f"[CONFIG] Loaded {num_lanes} lanes config.")
     logging.info(f"[CONFIG] Queue Timeout: {QUEUE_HEAD_TIMEOUT}s")
-    logging.info(f"[CONFIG] Sensor Entry Pin (Real/Mock): {SENSOR_ENTRY_PIN} / {SENSOR_ENTRY_MOCK_PIN}")
+    # (SỬA) Vô hiệu hóa
+    # logging.info(f"[CONFIG] Sensor Entry Pin (Real/Mock): {SENSOR_ENTRY_PIN} / {SENSOR_ENTRY_MOCK_PIN}")
 
 def ensure_lane_ids(lanes_list):
     default_ids = ['SP001', 'SP002', 'SP003', 'SP004', 'SP005', 'SP006', 'SP007', 'SP008', 'SP009', 'SP010']
@@ -868,6 +877,11 @@ def qr_detection_loop():
             LANE_MAP = {}
             stop_on_qr = False
             stop_delay_qr = 2.0
+            # (MỚI) Lấy NG_LANE_INDEX và config AI (cho logic trigger mới)
+            NG_LANE_INDEX = -1
+            NG_LANE_NAME = "Hàng NG"
+            ai_cfg = {}
+            
             with state_lock:
                 LANE_MAP = {canon_id(lane.get("id")): idx 
                             for idx, lane in enumerate(system_state["lanes"]) if lane.get("id")}
@@ -875,7 +889,18 @@ def qr_detection_loop():
                 cfg_timing = system_state.get('timing_config', {})
                 stop_on_qr = cfg_timing.get('stop_conveyor_on_qr', False)
                 stop_delay_qr = cfg_timing.get('conveyor_stop_delay_qr', 2.0)
+                
+                # (MỚI) Lấy NG_LANE_INDEX và config AI
+                ai_cfg = system_state.get('ai_config', {})
+                for i_ng, lane_ng in enumerate(system_state["lanes"]):
+                    if canon_id(lane_ng.get("id")) == "NG":
+                        NG_LANE_INDEX = i_ng
+                        NG_LANE_NAME = lane_ng.get("name", "Hàng NG")
+                        break
 
+            if not LANE_MAP: # Chưa load config xong
+                time.sleep(0.5)
+                continue
 
             frame_copy = None
             with frame_lock:
@@ -927,15 +952,81 @@ def qr_detection_loop():
                     idx = LANE_MAP[data_key]
                     current_queue_for_log = []
                     
-                    with qr_queue_lock: 
-                        qr_queue.append(idx) 
-                        current_queue_for_log = list(qr_queue) 
+                    # (SỬA) LOGIC MỚI: Bỏ Sensor Gác Cổng. Kích hoạt Job ngay khi quét QR.
+                    # Logic này được chuyển từ 'entry_sensor_monitoring_thread' sang đây.
                     
+                    ai_is_on = ai_cfg.get('enable_ai', False) and AI_ENABLED
+                    ai_has_priority = ai_cfg.get('ai_priority', False)
+                    
+                    job_lane_index = NG_LANE_INDEX
+                    job_lane_name = NG_LANE_NAME
+                    job_status = "PENDING"
+                    
+                    qr_lane_index = idx # Đây là lane từ QR
+                    
+                    ai_lane_index = NG_LANE_INDEX
+                    ai_class_name = None
+                    if ai_is_on:
+                        ai_lane_index, ai_class_name = run_ai_detection(NG_LANE_INDEX)
+
+                    if ai_has_priority and ai_is_on:
+                        if ai_lane_index != NG_LANE_INDEX:
+                            job_lane_index = ai_lane_index
+                            job_status = f"AI_MATCHED ({ai_class_name})"
+                        elif qr_lane_index is not None:
+                            job_lane_index = qr_lane_index
+                            job_status = "QR_MATCHED (AI_Fallback)"
+                        else:
+                            job_status = "ALL_FAILED" # Sẽ không xảy ra vì qr_lane_index luôn có
+                    else:
+                        if qr_lane_index is not None:
+                            job_lane_index = qr_lane_index
+                            job_status = "QR_MATCHED"
+                        elif ai_is_on and ai_lane_index != NG_LANE_INDEX:
+                            job_lane_index = ai_lane_index
+                            job_status = f"AI_MATCHED ({ai_class_name}) (QR_Fallback)"
+                        else:
+                            job_status = "ALL_FAILED"
+                    
+                    job_id = str(uuid.uuid4())[:8] 
+                    job_id_log_prefix = f"[JobID {job_id}]"
+
+                    job = {
+                        "job_id": job_id, 
+                        "lane_index": job_lane_index,
+                        "status": job_status,
+                        "entry_time": now
+                    }
+
+                    if job_lane_index != NG_LANE_INDEX:
+                        with state_lock:
+                            if 0 <= job_lane_index < len(system_state["lanes"]):
+                                job_lane_name = system_state["lanes"][job_lane_index]["name"]
+                                system_state["lanes"][job_lane_index]["status"] = "Đang chờ vật..."
+                    else:
+                        job_lane_name = NG_LANE_NAME
+                    
+                    current_queue_indices = []
+                    with processing_queue_lock:
+                        processing_queue.append(job)
+                        if len(processing_queue) == 1:
+                            queue_head_since = now
+                        current_queue_len = len(processing_queue)
+                        current_queue_indices = [j["lane_index"] for j in processing_queue]
+                    
+                    with state_lock:
+                        system_state["queue_indices"] = current_queue_indices
+                        system_state["entry_queue_size"] = current_queue_len
+                    
+                    # Ghi log gốc của QR
                     broadcast_log({
                         "log_type": "qr", 
                         "data": {"data_raw": data_raw, "data_key": data_key, "source": qr_source}
                     })
-                    logging.info(f"[QR] ({qr_source}) Hợp lệ: canon='{data_key}' -> lane {idx}. (Hàng chờ QR Tạm size={len(current_queue_for_log)})")
+                    # Ghi log của Job mới
+                    broadcast_log({"log_type": "info", "message": f"{job_id_log_prefix} Vật vào (Camera Trigger). Ghép cặp: {job_status} -> Lane '{job_lane_name}'."})
+                    logging.info(f"[QR/ENTRY] {job_id_log_prefix} (CAM_ENTRY) Ghép cặp: {job_status} -> Lane '{job_lane_name}'. Queue chính: {current_queue_len}")
+
                     
                     # === (MỚI) LOGIC DỪNG BĂNG CHUYỀN ===
                     if stop_on_qr:
@@ -1020,147 +1111,18 @@ def restart_conveyor_after_delay(delay_seconds):
 # =============================
 #       LUỒNG SENSOR GÁC CỔNG (FIX #9)
 # =============================
-def entry_sensor_monitoring_thread():
-    global last_entry_sensor_state, last_entry_sensor_trigger_time, queue_head_since
-
-    sensor_pin_to_read = SENSOR_ENTRY_PIN
-    if isinstance(GPIO, MockGPIO):
-        sensor_pin_to_read = SENSOR_ENTRY_MOCK_PIN
-        
-    logging.info(f"[ENTRY] Thread Entry Sensor (Pin: {sensor_pin_to_read}) bắt đầu (Đã tích hợp Stability Delay).")
-    
-    NG_LANE_INDEX = -1
-    NG_LANE_NAME = "Hàng NG"
-    with state_lock:
-        for i, lane in enumerate(system_state["lanes"]):
-            if canon_id(lane.get("id")) == "NG":
-                NG_LANE_INDEX = i
-                NG_LANE_NAME = lane.get("name", "Hàng NG")
-                break
-    logging.info(f"[ENTRY] Đã cấu hình hàng NG tại index: {NG_LANE_INDEX} ({NG_LANE_NAME})")
-
-
-    while main_loop_running:
-        if AUTO_TEST_ENABLED or error_manager.is_maintenance():
-            time.sleep(0.1); continue
-        
-        ai_cfg = {}
-        debounce_time = 0.1
-        stop_conveyor_enabled = False
-        conveyor_stop_delay = 1.0
-        stability_delay = 0.25 
-
-        with state_lock:
-            cfg_timing = system_state['timing_config']
-            debounce_time = cfg_timing.get('sensor_debounce', 0.1) 
-            stability_delay = cfg_timing.get('stability_delay', stability_delay) 
-            
-            stop_conveyor_enabled = cfg_timing.get('stop_conveyor_on_entry', False)
-            conveyor_stop_delay = cfg_timing.get('conveyor_stop_delay', 1.0)
-            ai_cfg = system_state.get('ai_config', {})
-
-        ai_is_on = ai_cfg.get('enable_ai', False) and AI_ENABLED
-        ai_has_priority = ai_cfg.get('ai_priority', False)
-        now = time.time()
-
-        try:
-            sensor_now = GPIO.input(sensor_pin_to_read)
-        except Exception as gpio_e:
-            logging.error(f"[ENTRY] Lỗi đọc GPIO pin {sensor_pin_to_read} (SENSOR_ENTRY): {gpio_e}")
-            error_manager.trigger_maintenance(f"Lỗi đọc sensor ENTRY pin {sensor_pin_to_read}: {gpio_e}")
-            time.sleep(0.5); continue
-
-        with state_lock:
-            system_state["sensor_entry_reading"] = sensor_now
-
-        if sensor_now == 0 and last_entry_sensor_state == 1:
-            if (now - last_entry_sensor_trigger_time) > debounce_time:
-                
-                if stability_delay > 0:
-                    time.sleep(stability_delay) 
-                    if GPIO.input(sensor_pin_to_read) != 0: 
-                        logging.info(f"[ENTRY] Bỏ qua nhiễu tạm thời (tay/quét nhanh) (dưới {stability_delay}s)")
-                        last_entry_sensor_state = 1 
-                        continue 
-                
-                last_entry_sensor_trigger_time = now
-                
-                job_lane_index = NG_LANE_INDEX
-                job_lane_name = NG_LANE_NAME
-                job_status = "PENDING"
-
-                qr_lane_index = None
-                try:
-                    with qr_queue_lock:
-                        qr_lane_index = qr_queue.pop(0)
-                except IndexError:
-                    pass
-
-                ai_lane_index = NG_LANE_INDEX
-                ai_class_name = None
-                if ai_is_on:
-                    ai_lane_index, ai_class_name = run_ai_detection(NG_LANE_INDEX)
-
-                if ai_has_priority and ai_is_on:
-                    if ai_lane_index != NG_LANE_INDEX:
-                        job_lane_index = ai_lane_index
-                        job_status = f"AI_MATCHED ({ai_class_name})"
-                    elif qr_lane_index is not None:
-                        job_lane_index = qr_lane_index
-                        job_status = "QR_MATCHED (AI_Fallback)"
-                    else:
-                        job_status = "ALL_FAILED"
-                else:
-                    if qr_lane_index is not None:
-                        job_lane_index = qr_lane_index
-                        job_status = "QR_MATCHED"
-                    elif ai_is_on and ai_lane_index != NG_LANE_INDEX:
-                        job_lane_index = ai_lane_index
-                        job_status = f"AI_MATCHED ({ai_class_name}) (QR_Fallback)"
-                    else:
-                        job_status = "ALL_FAILED"
-                
-                # FIX #9: Thêm JobID
-                job_id = str(uuid.uuid4())[:8] # Tạo một ID trace
-                job_id_log_prefix = f"[JobID {job_id}]"
-
-                job = {
-                    "job_id": job_id, 
-                    "lane_index": job_lane_index,
-                    "status": job_status,
-                    "entry_time": now
-                }
-
-                if job_lane_index != NG_LANE_INDEX:
-                    with state_lock:
-                        if 0 <= job_lane_index < len(system_state["lanes"]):
-                            job_lane_name = system_state["lanes"][job_lane_index]["name"]
-                            system_state["lanes"][job_lane_index]["status"] = "Đang chờ vật..."
-                else:
-                    job_lane_name = NG_LANE_NAME
-                
-                current_queue_indices = []
-                with processing_queue_lock:
-                    processing_queue.append(job)
-                    if len(processing_queue) == 1:
-                        queue_head_since = now
-                    current_queue_len = len(processing_queue)
-                    current_queue_indices = [j["lane_index"] for j in processing_queue]
-                
-                with state_lock:
-                    system_state["queue_indices"] = current_queue_indices
-                    system_state["entry_queue_size"] = current_queue_len
-                
-                broadcast_log({"log_type": "info", "message": f"{job_id_log_prefix} Vật vào Gác Cổng (Ổn định {stability_delay}s). Ghép cặp: {job_status} -> Lane '{job_lane_name}'."})
-                logging.info(f"[ENTRY] {job_id_log_prefix} SENSOR_ENTRY kích hoạt. Ghép cặp: {job_status} -> Lane '{job_lane_name}'. Queue chính: {current_queue_len}")
-
-                if stop_conveyor_enabled and job_status == "ALL_FAILED":
-                    logging.warning(f"[ENTRY] {job_id_log_prefix} Đọc QR và AI đều thất bại, DỪNG băng chuyền...")
-                    CONVEYOR_STOP()
-                    executor.submit(restart_conveyor_after_delay, conveyor_stop_delay)
-
-        last_entry_sensor_state = sensor_now
-        time.sleep(0.05)
+# (SỬA) VÔ HIỆU HÓA TOÀN BỘ LUỒNG SENSOR GÁC CỔNG
+# def entry_sensor_monitoring_thread():
+#     global last_entry_sensor_state, last_entry_sensor_trigger_time, queue_head_since
+# 
+#     sensor_pin_to_read = SENSOR_ENTRY_PIN
+#     if isinstance(GPIO, MockGPIO):
+#         sensor_pin_to_read = SENSOR_ENTRY_MOCK_PIN
+#         
+#     logging.info(f"[ENTRY] Thread Entry Sensor (Pin: {sensor_pin_to_read}) bắt đầu (Đã tích hợp Stability Delay).")
+# ... (TOÀN BỘ HÀM ĐÃ BỊ COMMENT OUT) ...
+#         last_entry_sensor_state = sensor_now
+#         time.sleep(0.05)
 
 # =============================
 #       LUỒNG SENSOR LÀN (FIX #9)
@@ -1248,8 +1210,9 @@ def lane_sensor_monitoring_thread():
                     lane_name_for_log = lane_for_read['name']
 
                 if sensor_pin is None: continue
-                if (sensor_pin == SENSOR_ENTRY_PIN) or (isinstance(GPIO, MockGPIO) and sensor_pin == SENSOR_ENTRY_MOCK_PIN):
-                    continue
+                # (SỬA) Vô hiệu hóa kiểm tra sensor gác cổng
+                # if (sensor_pin == SENSOR_ENTRY_PIN) or (isinstance(GPIO, MockGPIO) and sensor_pin == SENSOR_ENTRY_MOCK_PIN):
+                #     continue
 
                 try:
                     sensor_now = GPIO.input(sensor_pin)
@@ -1326,7 +1289,7 @@ def lane_sensor_monitoring_thread():
                 if i < len(last_sensor_state_prev):
                     last_sensor_state_prev[i] = sensor_now
 
-            adaptive_sleep = 0.05 if all(s == 1 for s in last_sensor_state_prev) and last_entry_sensor_state == 1 else 0.01
+            adaptive_sleep = 0.05 if all(s == 1 for s in last_sensor_state_prev) else 0.01 # (SỬA) Bỏ check last_entry_sensor_state
             time.sleep(adaptive_sleep)
 
     except Exception as e:
@@ -1396,6 +1359,8 @@ def broadcast_state():
             system_state["gpio_mode"] = system_state['timing_config'].get('gpio_mode', 'BCM')
             system_state["entry_queue_size"] = queue_len
             system_state["queue_indices"] = current_queue_indices
+            # (SỬA) Vô hiệu hóa
+            # system_state['sensor_entry_reading'] = 1 
             
             # 2. Tạo một bản deepcopy để thả lock
             try:
@@ -1462,7 +1427,7 @@ def generate_frames():
 @app.route('/')
 @requires_auth
 def index():
-    return render_template('index_app.html')
+    return render_template('index.html')
 
 @app.route('/video_feed')
 @requires_auth
@@ -1595,8 +1560,9 @@ def update_config():
             num_lanes = len(lanes_config)
             new_system_lanes = []; new_relay_pins = []; new_sensor_pins = []
 
-            if SENSOR_ENTRY_PIN: new_sensor_pins.append(SENSOR_ENTRY_PIN)
-            if isinstance(GPIO, MockGPIO) and SENSOR_ENTRY_MOCK_PIN: new_sensor_pins.append(SENSOR_ENTRY_MOCK_PIN)
+            # (SỬA) Vô hiệu hóa
+            # if SENSOR_ENTRY_PIN: new_sensor_pins.append(SENSOR_ENTRY_PIN)
+            # if isinstance(GPIO, MockGPIO) and SENSOR_ENTRY_MOCK_PIN: new_sensor_pins.append(SENSOR_ENTRY_MOCK_PIN)
             if RELAY_CONVEYOR_PIN: new_relay_pins.append(RELAY_CONVEYOR_PIN)
 
             for i, lane_cfg in enumerate(lanes_config):
@@ -1649,7 +1615,9 @@ def update_config():
 @app.route('/api/reset_maintenance', methods=['POST'])
 @requires_auth
 def reset_maintenance():
-    global queue_head_since, last_entry_sensor_state, last_entry_sensor_trigger_time
+    global queue_head_since
+    # (SỬA) Vô hiệu hóa
+    # global last_entry_sensor_state, last_entry_sensor_trigger_time
 
     if error_manager.is_maintenance():
         error_manager.reset()
@@ -1660,13 +1628,15 @@ def reset_maintenance():
             processing_queue.clear()
             queue_head_since = 0.0
         
-        last_entry_sensor_state = 1
-        last_entry_sensor_trigger_time = 0.0
+        # (SỬA) Vô hiệu hóa
+        # last_entry_sensor_state = 1
+        # last_entry_sensor_trigger_time = 0.0
 
         with state_lock:
             system_state["queue_indices"] = []
             system_state["entry_queue_size"] = 0
-            system_state["sensor_entry_reading"] = 1
+            # (SỬA) Vô hiệu hóa
+            # system_state["sensor_entry_reading"] = 1
             
         broadcast_log({"log_type": "success", "message": "Chế độ bảo trì đã được reset. Hàng chờ đã được xóa."})
         return jsonify({"message": "Maintenance mode reset thành công."})
@@ -1693,6 +1663,8 @@ def api_queue_reset():
                 lane["status"] = "Sẵn sàng"
             system_state["queue_indices"] = current_queue_for_log
             system_state["entry_queue_size"] = 0
+            # (SỬA) Vô hiệu hóa
+            # system_state['sensor_entry_reading'] = 1
             
         broadcast_log({"log_type": "warn", "message": "Tất cả hàng chờ (Tạm & Chính) đã được reset thủ công.", "queue": current_queue_for_log})
         logging.info("[API] Tất cả hàng chờ đã được reset thủ công.")
@@ -1726,17 +1698,24 @@ def api_mock_gpio():
         try: pin_to_mock = int(pin)
         except (TypeError, ValueError): return jsonify({"error": "Giá trị pin không hợp lệ."}), 400
         
-        if pin_to_mock == SENSOR_ENTRY_PIN:
-            pin_to_mock = SENSOR_ENTRY_MOCK_PIN
-            lane_name = "SENSOR_ENTRY (Real Pin)"
-        elif pin_to_mock == SENSOR_ENTRY_MOCK_PIN:
-            lane_name = "SENSOR_ENTRY (Mock Pin)"
-        else:
-            with state_lock:
-                 for lane in system_state['lanes']:
-                    if lane.get('sensor_pin') == pin_to_mock:
-                        lane_name = lane.get('name', f"Pin {pin_to_mock}")
-                        break
+        # (SỬA) Vô hiệu hóa
+        # if pin_to_mock == SENSOR_ENTRY_PIN:
+        #     pin_to_mock = SENSOR_ENTRY_MOCK_PIN
+        #     lane_name = "SENSOR_ENTRY (Real Pin)"
+        # elif pin_to_mock == SENSOR_ENTRY_MOCK_PIN:
+        #     lane_name = "SENSOR_ENTRY (Mock Pin)"
+        # else:
+        #     with state_lock:
+        #          for lane in system_state['lanes']:
+        #             if lane.get('sensor_pin') == pin_to_mock:
+        #                 lane_name = lane.get('name', f"Pin {pin_to_mock}")
+        #                 break
+        with state_lock:
+             for lane in system_state['lanes']:
+                if lane.get('sensor_pin') == pin_to_mock:
+                    lane_name = lane.get('name', f"Pin {pin_to_mock}")
+                    break
+
 
     if pin_to_mock is None: return jsonify({"error": "Thiếu thông tin chân sensor."}), 400
 
@@ -1746,13 +1725,18 @@ def api_mock_gpio():
         GPIO.set_input_state(pin_to_mock, logical_state)
 
     with state_lock:
-        if pin_to_mock == SENSOR_ENTRY_MOCK_PIN:
-            system_state['sensor_entry_reading'] = 0 if logical_state == 0 else 1
-        else:
-            for lane in system_state['lanes']:
-                if lane.get('sensor_pin') == pin_to_mock:
-                    lane['sensor_reading'] = 0 if logical_state == 0 else 1
-                    break
+        # (SỬA) Vô hiệu hóa
+        # if pin_to_mock == SENSOR_ENTRY_MOCK_PIN:
+        #     system_state['sensor_entry_reading'] = 0 if logical_state == 0 else 1
+        # else:
+        #     for lane in system_state['lanes']:
+        #         if lane.get('sensor_pin') == pin_to_mock:
+        #             lane['sensor_reading'] = 0 if logical_state == 0 else 1
+        #             break
+        for lane in system_state['lanes']:
+            if lane.get('sensor_pin') == pin_to_mock:
+                lane['sensor_reading'] = 0 if logical_state == 0 else 1
+                break
                     
     state_label = 'ACTIVE (LOW)' if logical_state == 0 else 'INACTIVE (HIGH)'
     message = f"[MOCK] Sensor pin {pin_to_mock} -> {state_label} ({lane_name})";
@@ -1766,7 +1750,9 @@ def api_mock_gpio():
 @sock.route('/ws')
 @requires_auth
 def ws_route(ws):
-    global AUTO_TEST_ENABLED, test_seq_running, queue_head_since, last_entry_sensor_state, last_entry_sensor_trigger_time
+    global AUTO_TEST_ENABLED, test_seq_running, queue_head_since
+    # (SỬA) Vô hiệu hóa
+    # global last_entry_sensor_state, last_entry_sensor_trigger_time
     
     auth_user = "guest";
     if AUTH_ENABLED:
@@ -1790,7 +1776,8 @@ def ws_route(ws):
             system_state["last_error"] = error_manager.last_error
             system_state["auth_enabled"] = AUTH_ENABLED
             system_state["entry_queue_size"] = queue_len
-            system_state["sensor_entry_reading"] = last_entry_sensor_state
+            # (SỬA) Vô hiệu hóa
+            # system_state["sensor_entry_reading"] = last_entry_sensor_state 
             system_state["queue_indices"] = current_queue_indices
             initial_state_msg = json.dumps({"type": "state_update", "state": system_state})
         ws.send(initial_state_msg)
@@ -1841,13 +1828,15 @@ def ws_route(ws):
                                 processing_queue.clear()
                                 queue_head_since = 0.0
                             
-                            last_entry_sensor_state = 1
-                            last_entry_sensor_trigger_time = 0.0
+                            # (SỬA) Vô hiệu hóa
+                            # last_entry_sensor_state = 1
+                            # last_entry_sensor_trigger_time = 0.0
                                 
                             with state_lock:
                                 system_state["queue_indices"] = []
                                 system_state["entry_queue_size"] = 0
-                                system_state["sensor_entry_reading"] = 1
+                                # (SỬA) Vô hiệu hóa
+                                # system_state["sensor_entry_reading"] = 1
                                 
                             broadcast_log({"log_type": "success", "message": f"Chế độ bảo trì đã được reset bởi {client_label}. Hàng chờ đã được xóa."})
                         else:
@@ -1911,15 +1900,17 @@ if __name__ == "__main__":
         threading.Thread(target=qr_detection_loop, name="QRThread", daemon=True).start()
         
         logging.info("[MAIN] Đang khởi động ở chế độ (Gated Job Queue + AI).")
-        threading.Thread(target=entry_sensor_monitoring_thread, name="EntrySensorThread", daemon=True).start()
+        # (SỬA) Vô hiệu hóa
+        # threading.Thread(target=entry_sensor_monitoring_thread, name="EntrySensorThread", daemon=True).start()
         threading.Thread(target=lane_sensor_monitoring_thread, name="LaneSensorThread", daemon=True).start()
             
         threading.Thread(target=broadcast_state, name="BroadcastThread", daemon=True).start()
         threading.Thread(target=periodic_config_save, name="ConfigSaveThread", daemon=True).start()
 
         logging.info("=========================================")
-        logging.info("  HỆ THỐNG PHÂN LOẠI SẴN SÀNG (v6.8 - Gộp)")
-        logging.info(f"  Logic: FIFO Gác cổng (Đã kích hoạt)")
+        logging.info("  HỆ THỐNG PHÂN LOẠI SẴN SÀNG HOẠT ĐỘNG")
+        # (SỬA) Cập nhật log
+        logging.info(f"  Logic: Camera Trigger (Đã kích hoạt)")
         logging.info(f"  GPIO Mode: {'REAL' if isinstance(GPIO, RealGPIO) else 'MOCK'} (Config: {loaded_gpio_mode})")
         logging.info(f"  API State: http://<IP_CUA_PI>:3000")
         if AUTH_ENABLED:
@@ -1951,3 +1942,4 @@ if __name__ == "__main__":
         except Exception as clean_e:
             logging.warning(f"Lỗi khi cleanup GPIO: {clean_e}")
         logging.info("👋 Tạm biệt!")
+
