@@ -164,8 +164,6 @@ PASSWORD = os.environ.get("APP_PASSWORD", "123")
 # (SỬA) Vô hiệu hóa Sensor Gác Cổng
 # SENSOR_ENTRY_PIN = 6
 # SENSOR_ENTRY_MOCK_PIN = 99
-SENSOR_ENTRY_PIN = None
-SENSOR_ENTRY_MOCK_PIN = None
 
 # =============================
 #     KHỞI TẠO CÁC ĐỐI TƯỢNG
