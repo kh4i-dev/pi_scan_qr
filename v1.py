@@ -1425,7 +1425,7 @@ def generate_frames():
 @app.route('/')
 @requires_auth
 def index():
-    return render_template('index.html')
+    return render_template('index_v1.html')
 
 @app.route('/video_feed')
 @requires_auth
